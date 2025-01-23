@@ -461,28 +461,108 @@
         setTimeout(() => container.remove(), 6000);
       }
 
+      function createGoose() {
+        const svgNS = "http://www.w3.org/2000/svg";
+        const svg = document.createElementNS(svgNS, "svg");
+        svg.setAttribute("viewBox", "0 0 100 100");
+
+        // Body
+        const body = document.createElementNS(svgNS, "ellipse");
+        body.setAttribute("cx", "50");
+        body.setAttribute("cy", "60");
+        body.setAttribute("rx", "30");
+        body.setAttribute("ry", "25");
+        body.setAttribute("fill", "#FFFFFF");
+
+        // Neck curve
+        const neck = document.createElementNS(svgNS, "path");
+        neck.setAttribute("d", "M60,45 Q70,35 65,25");
+        neck.setAttribute("stroke", "#FFFFFF");
+        neck.setAttribute("stroke-width", "18");
+        neck.setAttribute("fill", "none");
+        neck.setAttribute("stroke-linecap", "round");
+
+        // Head
+        const head = document.createElementNS(svgNS, "circle");
+        head.setAttribute("cx", "65");
+        head.setAttribute("cy", "25");
+        head.setAttribute("r", "12");
+        head.setAttribute("fill", "#FFFFFF");
+
+        // Beak
+        const beak = document.createElementNS(svgNS, "path");
+        beak.setAttribute("d", "M65,25 L85,23 L65,28 Z");
+        beak.setAttribute("fill", "#FF9800");
+
+        // Eye
+        const eye = document.createElementNS(svgNS, "circle");
+        eye.setAttribute("cx", "69");
+        eye.setAttribute("cy", "23");
+        eye.setAttribute("r", "2.5");
+        eye.setAttribute("fill", "#000000");
+
+        // Legs
+        const leg1 = document.createElementNS(svgNS, "rect");
+        leg1.setAttribute("x", "35");
+        leg1.setAttribute("y", "75");
+        leg1.setAttribute("width", "8");
+        leg1.setAttribute("height", "15");
+        leg1.setAttribute("fill", "#FF9800");
+
+        const leg2 = document.createElementNS(svgNS, "rect");
+        leg2.setAttribute("x", "55");
+        leg2.setAttribute("y", "75");
+        leg2.setAttribute("width", "8");
+        leg2.setAttribute("height", "15");
+        leg2.setAttribute("fill", "#FF9800");
+
+        // Add all elements to SVG
+        svg.appendChild(body);
+        svg.appendChild(neck);
+        svg.appendChild(head);
+        svg.appendChild(beak);
+        svg.appendChild(eye);
+        svg.appendChild(leg1);
+        svg.appendChild(leg2);
+
+        return svg;
+      }
+
       function createCapybaraCouple() {
         const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-        svg.setAttribute("viewBox", "0 0 200 100");
-        svg.setAttribute("width", "120");
-        svg.setAttribute("height", "60");
+        svg.setAttribute("viewBox", "0 0 300 120");
+        svg.setAttribute("width", "300");
+        svg.setAttribute("height", "120");
 
-        // First capybara (similar to above but positioned differently)
-        const capy1 = createSVGCapybara();
-        capy1.setAttribute("transform", "translate(-30, 0) scale(0.8)");
+        // Capybara with much larger scale
+        const capy = createSVGCapybara();
+        capy.setAttribute("transform", "translate(0, 10) scale(1.8)"); // Increased scale dramatically from 1.4 to 1.8
 
-        // Second capybara (similar but flipped and positioned)
-        const capy2 = createSVGCapybara();
-        capy2.setAttribute("transform", "translate(80, 0) scale(-0.8, 0.8)");
+        // Goose (keeping same scale)
+        const goose = createGoose();
+        goose.setAttribute("transform", "translate(180, 10) scale(1.1)");
 
-        // Heart between them
+        // Heart
         const heart = document.createElementNS("http://www.w3.org/2000/svg", "path");
-        heart.setAttribute("d", "M100,35 C100,30 95,25 90,25 C80,25 80,37.5 80,37.5 C80,37.5 80,25 70,25 C65,25 60,30 60,35 C60,45 80,55 80,55 C80,55 100,45 100,35 Z");
-        heart.setAttribute("fill", "#ff69b4");
+        heart.setAttribute(
+          "d",
+          `
+                M 150 35
+                C 150 20 140 10 125 10
+                C 110 10 100 20 100 35
+                C 100 50 125 65 150 80
+                C 175 65 200 50 200 35
+                C 200 20 190 10 175 10
+                C 160 10 150 20 150 35
+            `
+        );
+        heart.setAttribute("fill", "#FF69B4");
+        heart.setAttribute("transform", "translate(-20, 0) scale(0.8)");
 
-        svg.appendChild(capy1);
-        svg.appendChild(capy2);
+        // Add all elements to main SVG
         svg.appendChild(heart);
+        svg.appendChild(capy);
+        svg.appendChild(goose);
 
         return svg;
       }

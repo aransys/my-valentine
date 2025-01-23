@@ -26,6 +26,8 @@
         background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab);
         background-size: 400% 400%;
         animation: gradient 15s ease infinite;
+        min-height: 100vh;
+        position: relative;
       }
 
       @keyframes gradient {
@@ -37,23 +39,6 @@
         }
         100% {
           background-position: 0% 50%;
-        }
-      }
-
-      .particle {
-        position: fixed;
-        border-radius: 50%;
-        background: rgba(255, 255, 255, 0.5);
-        pointer-events: none;
-        animation: float 15s infinite;
-      }
-
-      @keyframes float {
-        0% {
-          transform: translateY(0) translateX(0) rotate(0deg);
-        }
-        100% {
-          transform: translateY(-100vh) translateX(100px) rotate(360deg);
         }
       }
 
@@ -84,10 +69,8 @@
       }
 
       .buttons {
-        margin-top: 30px;
         display: flex;
-        gap: 10px;
-        flex-wrap: wrap;
+        gap: 20px;
         justify-content: center;
       }
 
@@ -104,40 +87,158 @@
         min-width: 100px;
       }
 
-      #noBtn {
-        background-color: rgba(255, 255, 255, 0.1);
-        border: 2px solid rgba(255, 255, 255, 0.5);
-      }
-
-      #yesBtn:hover {
-        transform: scale(1.1);
+      button:hover {
         background-color: rgba(255, 255, 255, 0.3);
-        box-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
+        transform: scale(1.1);
       }
 
-      .hearts {
+      #yesBtn {
+        background-color: rgba(255, 255, 255, 0.4);
+        font-weight: bold;
+        text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
+        box-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+      }
+
+      .moving-button {
         position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        pointer-events: none;
-        display: none;
-        z-index: 2;
+        z-index: 1000;
+        background-color: rgba(255, 255, 255, 0.2);
+        color: white;
+        border: 2px solid white;
+        padding: 15px 32px;
+        font-size: 16px;
+        cursor: pointer;
+        border-radius: 25px;
+        transition: all 0.3s;
+        backdrop-filter: blur(5px);
+        white-space: nowrap;
       }
 
-      @media (max-width: 480px) {
-        h1 {
-          font-size: 2em;
+      .heart {
+        position: fixed;
+        pointer-events: none;
+        z-index: 1000;
+        font-size: 24px;
+        animation: float-heart 4s ease-out forwards;
+      }
+
+      @keyframes float-heart {
+        0% {
+          transform: translateY(100vh) scale(0.3);
+          opacity: 0;
         }
-        p {
-          font-size: 1em;
+        10% {
+          opacity: 1;
         }
-        .container {
-          padding: 1.5rem;
+        100% {
+          transform: translateY(-20vh) scale(1.5) rotate(360deg);
+          opacity: 0;
         }
-        button {
-          padding: 12px 24px;
+      }
+
+      .firework {
+        position: absolute;
+        pointer-events: none;
+      }
+
+      .firework::before {
+        content: "";
+        position: absolute;
+        width: 5px;
+        height: 5px;
+        border-radius: 50%;
+        animation: firework-explode 2s ease-out forwards;
+      }
+
+      @keyframes firework-explode {
+        0% {
+          transform: scale(1);
+          opacity: 1;
+          box-shadow: 0 0 0 0 #fff, 0 0 0 0 #fff, 0 0 0 0 #fff, 0 0 0 0 #fff, 0 0 0 0 #fff, 0 0 0 0 #fff, 0 0 0 0 #fff, 0 0 0 0 #fff;
+        }
+        100% {
+          transform: scale(0);
+          opacity: 0;
+          box-shadow: -120px -120px 0 #fff, 120px -120px 0 #fff, -120px 120px 0 #fff, 120px 120px 0 #fff, 0 200px 0 #fff, 0 -200px 0 #fff, 200px 0 0 #fff, -200px 0 0 #fff;
+        }
+      }
+
+      .success-message {
+        animation: scale-in 0.5s ease-out forwards;
+      }
+
+      .emoji {
+        position: fixed;
+        pointer-events: none;
+        z-index: 1000;
+        font-size: 24px;
+        animation: spread-out 1.5s ease-out forwards;
+      }
+
+      @keyframes spread-out {
+        0% {
+          transform: translate(0, 0);
+          opacity: 0;
+        }
+        5% {
+          opacity: 1;
+        }
+        100% {
+          transform: translate(var(--moveX), var(--moveY));
+          opacity: 0;
+        }
+      }
+
+      .capybara {
+        position: fixed;
+        pointer-events: none;
+        z-index: 1000;
+        animation: float-capybara 6s linear forwards;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2.5em;
+        background: rgba(255, 255, 255, 0.2);
+        padding: 10px;
+        border-radius: 50%;
+        backdrop-filter: blur(5px);
+      }
+
+      @keyframes float-capybara {
+        0% {
+          transform: translate(-100px, 100vh) rotate(0deg);
+          opacity: 0;
+        }
+        10% {
+          opacity: 1;
+        }
+        90% {
+          opacity: 1;
+        }
+        100% {
+          transform: translate(calc(100vw + 100px), -100px) rotate(360deg);
+          opacity: 0;
+        }
+      }
+
+      .capybara-vertical {
+        animation: float-capybara-vertical 6s linear forwards;
+      }
+
+      @keyframes float-capybara-vertical {
+        0% {
+          transform: translate(random(100vw), 100vh) rotate(0deg);
+          opacity: 0;
+        }
+        10% {
+          opacity: 1;
+        }
+        90% {
+          opacity: 1;
+        }
+        100% {
+          transform: translateY(-100px) rotate(360deg);
+          opacity: 0;
         }
       }
     </style>
@@ -151,90 +252,272 @@
         <button id="noBtn">No</button>
       </div>
     </div>
-    <div class="hearts" id="hearts"></div>
 
     <script>
-      // Create floating particles
-      for (let i = 0; i < 50; i++) {
-        const particle = document.createElement("div");
-        particle.className = "particle";
-        particle.style.width = Math.random() * 10 + "px";
-        particle.style.height = particle.style.width;
-        particle.style.left = Math.random() * 100 + "vw";
-        particle.style.top = Math.random() * 100 + "vh";
-        particle.style.animationDuration = Math.random() * 10 + 5 + "s";
-        particle.style.opacity = Math.random() * 0.5;
-        document.body.appendChild(particle);
-      }
-
-      let noCount = 0;
-      const noPhrases = [
-        "No",
-        "Are you sure?",
-        "Really sure?",
-        "Think again!",
-        "Last chance!",
-        "Surely not?",
-        "You might regret this!",
-        "Give it another thought!",
-        "Are you absolutely certain?",
-        "This could be a mistake!",
-        "Have a heart!",
-        "Don't be so cold!",
-        "Change of heart?",
-        "Wouldn't you reconsider?",
-        "Is that your final answer?",
-        "You're breaking my heart ;(",
+      const sweetQuestions = [
+        "Are you absolutely sure? 🥺",
+        "But what if I give you flowers? 🌸",
+        "Maybe we could get coffee first? ☕",
+        "What if I write you a love song? 🎵",
+        "I promise to make you smile everyday! 😊",
+        "We could watch sunsets together 🌅",
+        "I'll bake you cookies! 🍪",
+        "Think about all the adventures we'd have! ✨",
+        "I've been practicing my dad jokes! 🙈",
+        "What if I learn your favorite song? 🎸",
       ];
 
-      document.getElementById("noBtn").addEventListener("click", function () {
-        noCount++;
-        this.style.fontSize = Math.max(16 - noCount, 8) + "px";
-        this.style.padding = Math.max(15 - noCount * 2, 5) + "px";
-        this.textContent = noPhrases[Math.min(noCount, noPhrases.length - 1)];
+      let clickCount = 0;
+      let recentQuestions = [];
+      const sadEmojis = ["😢", "😭", "🥺", "💔", "😿", "😥", "😓", "😔", "🥹", "😕"];
 
-        const yesBtn = document.getElementById("yesBtn");
-        yesBtn.style.fontSize = 16 + noCount * 2 + "px";
-        yesBtn.style.padding = 15 + noCount * 2 + "px";
-      });
+      function createHeart() {
+        const heart = document.createElement("div");
+        heart.className = "heart";
+        heart.innerHTML = "❤️";
+        heart.style.left = Math.random() * (window.innerWidth - 50) + "px";
+        document.body.appendChild(heart);
+        setTimeout(() => heart.remove(), 4000);
+      }
 
-      document.getElementById("yesBtn").addEventListener("click", function () {
-        document.querySelector(".container").innerHTML = `
-                <h1>Yay! ❤️</h1>
-                <p>I knew you'd say yes!</p>
-            `;
-        createHearts();
-      });
+      function createFirework() {
+        const firework = document.createElement("div");
+        firework.className = "firework";
+        firework.style.left = Math.random() * window.innerWidth + "px";
+        firework.style.top = Math.random() * window.innerHeight + "px";
+        document.body.appendChild(firework);
+        setTimeout(() => firework.remove(), 2000);
+      }
 
-      function createHearts() {
-        const hearts = document.getElementById("hearts");
-        hearts.style.display = "block";
+      function getUniqueQuestion() {
+        const availableQuestions = sweetQuestions.filter((q) => !recentQuestions.includes(q));
+        if (availableQuestions.length === 0) {
+          recentQuestions = [];
+          return sweetQuestions[Math.floor(Math.random() * sweetQuestions.length)];
+        }
+        const question = availableQuestions[Math.floor(Math.random() * availableQuestions.length)];
+        recentQuestions.push(question);
+        if (recentQuestions.length > 5) {
+          recentQuestions.shift();
+        }
+        return question;
+      }
 
-        for (let i = 0; i < 40; i++) {
-          setTimeout(() => {
-            const heart = document.createElement("div");
-            heart.innerHTML = "❤️";
-            heart.style.position = "absolute";
-            heart.style.left = Math.random() * 100 + "vw";
-            heart.style.top = "100%";
-            heart.style.fontSize = Math.random() * 20 + 10 + "px";
-            heart.style.animation = "floatHeart 4s linear";
-            hearts.appendChild(heart);
-            setTimeout(() => heart.remove(), 4000);
-          }, i * 200);
+      function createNewButton() {
+        const newBtn = document.createElement("button");
+        newBtn.className = "moving-button";
+        newBtn.textContent = getUniqueQuestion();
+
+        const padding = 50;
+        const maxX = window.innerWidth - 300;
+        const maxY = window.innerHeight - 60;
+        const newX = Math.max(padding, Math.min(maxX - padding, Math.random() * maxX));
+        const newY = Math.max(padding, Math.min(maxY - padding, Math.random() * maxY));
+
+        newBtn.style.left = newX + "px";
+        newBtn.style.top = newY + "px";
+
+        newBtn.onclick = (e) => {
+          createEmojiExplosion(e.clientX, e.clientY);
+          clickCount++;
+          const yesBtn = document.getElementById("yesBtn");
+          const newScale = 1 + clickCount * 0.35;
+          yesBtn.style.transform = `scale(${newScale})`;
+          createNewButton();
+          newBtn.remove();
+        };
+
+        document.body.appendChild(newBtn);
+      }
+
+      function createEmojiExplosion(x, y) {
+        for (let i = 0; i < 8; i++) {
+          const emoji = document.createElement("div");
+          emoji.className = "emoji";
+          emoji.textContent = sadEmojis[Math.floor(Math.random() * sadEmojis.length)];
+
+          const angle = (i / 8) * Math.PI * 2;
+          const radius = 150;
+          const moveX = Math.cos(angle) * radius;
+          const moveY = Math.sin(angle) * radius;
+
+          emoji.style.left = x + "px";
+          emoji.style.top = y + "px";
+          emoji.style.setProperty("--moveX", moveX + "px");
+          emoji.style.setProperty("--moveY", moveY + "px");
+
+          document.body.appendChild(emoji);
+          setTimeout(() => emoji.remove(), 1500);
         }
       }
 
-      document.styleSheets[0].insertRule(
-        `
-            @keyframes floatHeart {
-                to {
-                    transform: translateY(-100vh);
-                }
-            }
-        `,
-        document.styleSheets[0].cssRules.length
-      );
+      document.getElementById("noBtn").addEventListener("click", function (e) {
+        createEmojiExplosion(e.clientX, e.clientY);
+        clickCount++;
+        const yesBtn = document.getElementById("yesBtn");
+        const newScale = 1 + clickCount * 0.35;
+        yesBtn.style.transform = `scale(${newScale})`;
+        createNewButton();
+        this.remove();
+      });
+
+      function createSVGCapybara() {
+        const svgNS = "http://www.w3.org/2000/svg";
+        const svg = document.createElementNS(svgNS, "svg");
+        svg.setAttribute("viewBox", "0 0 100 100");
+        svg.setAttribute("width", "60");
+        svg.setAttribute("height", "60");
+
+        // Body
+        const body = document.createElementNS(svgNS, "ellipse");
+        body.setAttribute("cx", "50");
+        body.setAttribute("cy", "60");
+        body.setAttribute("rx", "30");
+        body.setAttribute("ry", "25");
+        body.setAttribute("fill", "#916343");
+
+        // Head
+        const head = document.createElementNS(svgNS, "circle");
+        head.setAttribute("cx", "75");
+        head.setAttribute("cy", "45");
+        head.setAttribute("r", "20");
+        head.setAttribute("fill", "#916343");
+
+        // Eyes
+        const eye1 = document.createElementNS(svgNS, "circle");
+        eye1.setAttribute("cx", "82");
+        eye1.setAttribute("cy", "40");
+        eye1.setAttribute("r", "3");
+        eye1.setAttribute("fill", "#000");
+
+        const eye2 = document.createElementNS(svgNS, "circle");
+        eye2.setAttribute("cx", "70");
+        eye2.setAttribute("cy", "40");
+        eye2.setAttribute("r", "3");
+        eye2.setAttribute("fill", "#000");
+
+        // Nose
+        const nose = document.createElementNS(svgNS, "ellipse");
+        nose.setAttribute("cx", "77");
+        nose.setAttribute("cy", "48");
+        nose.setAttribute("rx", "6");
+        nose.setAttribute("ry", "4");
+        nose.setAttribute("fill", "#573d2a");
+
+        // Ears
+        const ear1 = document.createElementNS(svgNS, "circle");
+        ear1.setAttribute("cx", "85");
+        ear1.setAttribute("cy", "30");
+        ear1.setAttribute("r", "7");
+        ear1.setAttribute("fill", "#916343");
+
+        const ear2 = document.createElementNS(svgNS, "circle");
+        ear2.setAttribute("cx", "65");
+        ear2.setAttribute("cy", "30");
+        ear2.setAttribute("r", "7");
+        ear2.setAttribute("fill", "#916343");
+
+        // Legs
+        const leg1 = document.createElementNS(svgNS, "rect");
+        leg1.setAttribute("x", "35");
+        leg1.setAttribute("y", "75");
+        leg1.setAttribute("width", "8");
+        leg1.setAttribute("height", "15");
+        leg1.setAttribute("fill", "#916343");
+
+        const leg2 = document.createElementNS(svgNS, "rect");
+        leg2.setAttribute("x", "55");
+        leg2.setAttribute("y", "75");
+        leg2.setAttribute("width", "8");
+        leg2.setAttribute("height", "15");
+        leg2.setAttribute("fill", "#916343");
+
+        // Append all elements
+        svg.appendChild(body);
+        svg.appendChild(head);
+        svg.appendChild(ear1);
+        svg.appendChild(ear2);
+        svg.appendChild(eye1);
+        svg.appendChild(eye2);
+        svg.appendChild(nose);
+        svg.appendChild(leg1);
+        svg.appendChild(leg2);
+
+        return svg;
+      }
+
+      function createCapybara() {
+        const container = document.createElement("div");
+        container.className = "capybara";
+        const svg = createSVGCapybara();
+        container.appendChild(svg);
+        container.style.left = Math.random() * window.innerWidth + "px";
+
+        if (Math.random() > 0.5) {
+          container.classList.add("capybara-vertical");
+        }
+
+        document.body.appendChild(container);
+        setTimeout(() => container.remove(), 6000);
+      }
+
+      function createCapybaraCouple() {
+        const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+        svg.setAttribute("viewBox", "0 0 200 100");
+        svg.setAttribute("width", "120");
+        svg.setAttribute("height", "60");
+
+        // First capybara (similar to above but positioned differently)
+        const capy1 = createSVGCapybara();
+        capy1.setAttribute("transform", "translate(-30, 0) scale(0.8)");
+
+        // Second capybara (similar but flipped and positioned)
+        const capy2 = createSVGCapybara();
+        capy2.setAttribute("transform", "translate(80, 0) scale(-0.8, 0.8)");
+
+        // Heart between them
+        const heart = document.createElementNS("http://www.w3.org/2000/svg", "path");
+        heart.setAttribute("d", "M100,35 C100,30 95,25 90,25 C80,25 80,37.5 80,37.5 C80,37.5 80,25 70,25 C65,25 60,30 60,35 C60,45 80,55 80,55 C80,55 100,45 100,35 Z");
+        heart.setAttribute("fill", "#ff69b4");
+
+        svg.appendChild(capy1);
+        svg.appendChild(capy2);
+        svg.appendChild(heart);
+
+        return svg;
+      }
+
+      document.getElementById("yesBtn").addEventListener("click", function () {
+        // Remove any existing moving buttons
+        document.querySelectorAll(".moving-button").forEach((btn) => btn.remove());
+
+        // Update container content
+        const container = document.querySelector(".container");
+        container.innerHTML = `
+                <div class="success-message">
+                    <h1 style="font-size: 3em; margin-bottom: 30px;">YAAAAY! 🎉</h1>
+                    <p style="font-size: 1.5em; margin-bottom: 20px;">You've made my heart skip a beat! 💖</p>
+                    <p style="font-size: 1.2em; margin-bottom: 30px;">Get ready for the most amazing Valentine's ever!</p>
+                    <div style="font-size: 4em; margin: 30px 0;" id="capybaraCouple"></div>
+                </div>
+            `;
+
+        // Start celebration effects
+        let heartInterval = setInterval(createHeart, 200);
+        let fireworkInterval = setInterval(createFirework, 300);
+        let capybaraInterval = setInterval(createCapybara, 500); // Add capybaras!
+
+        // Stop celebrations after 1 minute
+        setTimeout(() => {
+          clearInterval(heartInterval);
+          clearInterval(fireworkInterval);
+          clearInterval(capybaraInterval);
+        }, 60000);
+
+        // Add capybara couple to the success message
+        const capybaraCouple = document.getElementById("capybaraCouple");
+        capybaraCouple.appendChild(createCapybaraCouple());
+      });
     </script>
   </body>
 </html>

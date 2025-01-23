@@ -27,7 +27,6 @@
         background-size: 400% 400%;
         animation: gradient 15s ease infinite;
         min-height: 100vh;
-        position: relative;
       }
 
       @keyframes gradient {
@@ -85,6 +84,8 @@
         transition: all 0.3s;
         backdrop-filter: blur(5px);
         min-width: 100px;
+        z-index: 10;
+        position: relative;
       }
 
       button:hover {
@@ -136,35 +137,19 @@
         }
       }
 
-      .firework {
-        position: absolute;
-        pointer-events: none;
-      }
-
-      .firework::before {
-        content: "";
-        position: absolute;
-        width: 5px;
-        height: 5px;
-        border-radius: 50%;
-        animation: firework-explode 2s ease-out forwards;
-      }
-
-      @keyframes firework-explode {
-        0% {
-          transform: scale(1);
-          opacity: 1;
-          box-shadow: 0 0 0 0 #fff, 0 0 0 0 #fff, 0 0 0 0 #fff, 0 0 0 0 #fff, 0 0 0 0 #fff, 0 0 0 0 #fff, 0 0 0 0 #fff, 0 0 0 0 #fff;
-        }
-        100% {
-          transform: scale(0);
-          opacity: 0;
-          box-shadow: -120px -120px 0 #fff, 120px -120px 0 #fff, -120px 120px 0 #fff, 120px 120px 0 #fff, 0 200px 0 #fff, 0 -200px 0 #fff, 200px 0 0 #fff, -200px 0 0 #fff;
-        }
-      }
-
       .success-message {
         animation: scale-in 0.5s ease-out forwards;
+      }
+
+      @keyframes scale-in {
+        0% {
+          transform: scale(0);
+          opacity: 0;
+        }
+        100% {
+          transform: scale(1);
+          opacity: 1;
+        }
       }
 
       .emoji {
@@ -189,56 +174,30 @@
         }
       }
 
-      .capybara {
-        position: fixed;
+      .firework {
+        position: absolute;
         pointer-events: none;
-        z-index: 1000;
-        animation: float-capybara 6s linear forwards;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 2.5em;
-        background: rgba(255, 255, 255, 0.2);
-        padding: 10px;
+      }
+
+      .firework::before {
+        content: "";
+        position: absolute;
+        width: 5px;
+        height: 5px;
         border-radius: 50%;
-        backdrop-filter: blur(5px);
+        animation: firework-explode 2s ease-out forwards;
       }
 
-      @keyframes float-capybara {
+      @keyframes firework-explode {
         0% {
-          transform: translate(-100px, 100vh) rotate(0deg);
-          opacity: 0;
-        }
-        10% {
+          transform: scale(1);
           opacity: 1;
-        }
-        90% {
-          opacity: 1;
+          box-shadow: 0 0 0 0 #fff, 0 0 0 0 #fff, 0 0 0 0 #fff, 0 0 0 0 #fff, 0 0 0 0 #fff, 0 0 0 0 #fff, 0 0 0 0 #fff, 0 0 0 0 #fff;
         }
         100% {
-          transform: translate(calc(100vw + 100px), -100px) rotate(360deg);
+          transform: scale(0);
           opacity: 0;
-        }
-      }
-
-      .capybara-vertical {
-        animation: float-capybara-vertical 6s linear forwards;
-      }
-
-      @keyframes float-capybara-vertical {
-        0% {
-          transform: translate(random(100vw), 100vh) rotate(0deg);
-          opacity: 0;
-        }
-        10% {
-          opacity: 1;
-        }
-        90% {
-          opacity: 1;
-        }
-        100% {
-          transform: translateY(-100px) rotate(360deg);
-          opacity: 0;
+          box-shadow: -120px -120px 0 #fff, 120px -120px 0 #fff, -120px 120px 0 #fff, 120px 120px 0 #fff, 0 200px 0 #fff, 0 -200px 0 #fff, 200px 0 0 #fff, -200px 0 0 #fff;
         }
       }
     </style>
@@ -267,106 +226,14 @@
         "What if I learn your favorite song? 🎸",
       ];
 
+      const sadEmojis = ["😢", "😭", "🥺", "💔", "😿", "😥", "😓", "😔", "🥹", "😕"];
       let clickCount = 0;
       let recentQuestions = [];
-      const sadEmojis = ["😢", "😭", "🥺", "💔", "😿", "😥", "😓", "😔", "🥹", "😕"];
-
-      function createHeart() {
-        const heart = document.createElement("div");
-        heart.className = "heart";
-        heart.innerHTML = "❤️";
-        heart.style.left = Math.random() * (window.innerWidth - 50) + "px";
-        document.body.appendChild(heart);
-        setTimeout(() => heart.remove(), 4000);
-      }
-
-      function createFirework() {
-        const firework = document.createElement("div");
-        firework.className = "firework";
-        firework.style.left = Math.random() * window.innerWidth + "px";
-        firework.style.top = Math.random() * window.innerHeight + "px";
-        document.body.appendChild(firework);
-        setTimeout(() => firework.remove(), 2000);
-      }
-
-      function getUniqueQuestion() {
-        const availableQuestions = sweetQuestions.filter((q) => !recentQuestions.includes(q));
-        if (availableQuestions.length === 0) {
-          recentQuestions = [];
-          return sweetQuestions[Math.floor(Math.random() * sweetQuestions.length)];
-        }
-        const question = availableQuestions[Math.floor(Math.random() * availableQuestions.length)];
-        recentQuestions.push(question);
-        if (recentQuestions.length > 5) {
-          recentQuestions.shift();
-        }
-        return question;
-      }
-
-      function createNewButton() {
-        const newBtn = document.createElement("button");
-        newBtn.className = "moving-button";
-        newBtn.textContent = getUniqueQuestion();
-
-        const padding = 50;
-        const maxX = window.innerWidth - 300;
-        const maxY = window.innerHeight - 60;
-        const newX = Math.max(padding, Math.min(maxX - padding, Math.random() * maxX));
-        const newY = Math.max(padding, Math.min(maxY - padding, Math.random() * maxY));
-
-        newBtn.style.left = newX + "px";
-        newBtn.style.top = newY + "px";
-
-        newBtn.onclick = (e) => {
-          createEmojiExplosion(e.clientX, e.clientY);
-          clickCount++;
-          const yesBtn = document.getElementById("yesBtn");
-          const newScale = 1 + clickCount * 0.35;
-          yesBtn.style.transform = `scale(${newScale})`;
-          createNewButton();
-          newBtn.remove();
-        };
-
-        document.body.appendChild(newBtn);
-      }
-
-      function createEmojiExplosion(x, y) {
-        for (let i = 0; i < 8; i++) {
-          const emoji = document.createElement("div");
-          emoji.className = "emoji";
-          emoji.textContent = sadEmojis[Math.floor(Math.random() * sadEmojis.length)];
-
-          const angle = (i / 8) * Math.PI * 2;
-          const radius = 150;
-          const moveX = Math.cos(angle) * radius;
-          const moveY = Math.sin(angle) * radius;
-
-          emoji.style.left = x + "px";
-          emoji.style.top = y + "px";
-          emoji.style.setProperty("--moveX", moveX + "px");
-          emoji.style.setProperty("--moveY", moveY + "px");
-
-          document.body.appendChild(emoji);
-          setTimeout(() => emoji.remove(), 1500);
-        }
-      }
-
-      document.getElementById("noBtn").addEventListener("click", function (e) {
-        createEmojiExplosion(e.clientX, e.clientY);
-        clickCount++;
-        const yesBtn = document.getElementById("yesBtn");
-        const newScale = 1 + clickCount * 0.35;
-        yesBtn.style.transform = `scale(${newScale})`;
-        createNewButton();
-        this.remove();
-      });
 
       function createSVGCapybara() {
         const svgNS = "http://www.w3.org/2000/svg";
         const svg = document.createElementNS(svgNS, "svg");
         svg.setAttribute("viewBox", "0 0 100 100");
-        svg.setAttribute("width", "60");
-        svg.setAttribute("height", "60");
 
         // Body
         const body = document.createElementNS(svgNS, "ellipse");
@@ -432,7 +299,6 @@
         leg2.setAttribute("height", "15");
         leg2.setAttribute("fill", "#916343");
 
-        // Append all elements
         svg.appendChild(body);
         svg.appendChild(head);
         svg.appendChild(ear1);
@@ -444,21 +310,6 @@
         svg.appendChild(leg2);
 
         return svg;
-      }
-
-      function createCapybara() {
-        const container = document.createElement("div");
-        container.className = "capybara";
-        const svg = createSVGCapybara();
-        container.appendChild(svg);
-        container.style.left = Math.random() * window.innerWidth + "px";
-
-        if (Math.random() > 0.5) {
-          container.classList.add("capybara-vertical");
-        }
-
-        document.body.appendChild(container);
-        setTimeout(() => container.remove(), 6000);
       }
 
       function createGoose() {
@@ -516,7 +367,6 @@
         leg2.setAttribute("height", "15");
         leg2.setAttribute("fill", "#FF9800");
 
-        // Add all elements to SVG
         svg.appendChild(body);
         svg.appendChild(neck);
         svg.appendChild(head);
@@ -530,19 +380,19 @@
 
       function createCapybaraCouple() {
         const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-        svg.setAttribute("viewBox", "0 0 300 120");
-        svg.setAttribute("width", "300");
+        svg.setAttribute("viewBox", "0 0 400 120");
+        svg.setAttribute("width", "400");
         svg.setAttribute("height", "120");
 
-        // Capybara with much larger scale
+        // Capybara positioned on the left
         const capy = createSVGCapybara();
-        capy.setAttribute("transform", "translate(0, 10) scale(1.8)"); // Increased scale dramatically from 1.4 to 1.8
+        capy.setAttribute("transform", "translate(20, 5) scale(2.4)");
 
-        // Goose (keeping same scale)
+        // Goose positioned on the right
         const goose = createGoose();
-        goose.setAttribute("transform", "translate(180, 10) scale(1.1)");
+        goose.setAttribute("transform", "translate(280, 10) scale(1.1)");
 
-        // Heart
+        // Heart centered between them
         const heart = document.createElementNS("http://www.w3.org/2000/svg", "path");
         heart.setAttribute(
           "d",
@@ -557,9 +407,8 @@
             `
         );
         heart.setAttribute("fill", "#FF69B4");
-        heart.setAttribute("transform", "translate(-20, 0) scale(0.8)");
+        heart.setAttribute("transform", "translate(50, 0) scale(0.8)");
 
-        // Add all elements to main SVG
         svg.appendChild(heart);
         svg.appendChild(capy);
         svg.appendChild(goose);
@@ -567,37 +416,130 @@
         return svg;
       }
 
-      document.getElementById("yesBtn").addEventListener("click", function () {
-        // Remove any existing moving buttons
-        document.querySelectorAll(".moving-button").forEach((btn) => btn.remove());
+      function createHeart() {
+        const heart = document.createElement("div");
+        heart.className = "heart";
+        heart.innerHTML = "❤️";
+        heart.style.left = Math.random() * (window.innerWidth - 50) + "px";
+        document.body.appendChild(heart);
+        setTimeout(() => heart.remove(), 4000);
+      }
 
-        // Update container content
-        const container = document.querySelector(".container");
-        container.innerHTML = `
-                <div class="success-message">
-                    <h1 style="font-size: 3em; margin-bottom: 30px;">YAAAAY! 🎉</h1>
-                    <p style="font-size: 1.5em; margin-bottom: 20px;">You've made my heart skip a beat! 💖</p>
-                    <p style="font-size: 1.2em; margin-bottom: 30px;">Get ready for the most amazing Valentine's ever!</p>
-                    <div style="font-size: 4em; margin: 30px 0;" id="capybaraCouple"></div>
-                </div>
-            `;
+      function createFirework() {
+        const firework = document.createElement("div");
+        firework.className = "firework";
+        firework.style.left = Math.random() * window.innerWidth + "px";
+        firework.style.top = Math.random() * window.innerHeight + "px";
+        document.body.appendChild(firework);
+        setTimeout(() => firework.remove(), 2000);
+      }
 
-        // Start celebration effects
-        let heartInterval = setInterval(createHeart, 200);
-        let fireworkInterval = setInterval(createFirework, 300);
-        let capybaraInterval = setInterval(createCapybara, 500); // Add capybaras!
+      function createEmojiExplosion(x, y) {
+        for (let i = 0; i < 8; i++) {
+          const emoji = document.createElement("div");
+          emoji.className = "emoji";
+          emoji.textContent = sadEmojis[Math.floor(Math.random() * sadEmojis.length)];
 
-        // Stop celebrations after 1 minute
-        setTimeout(() => {
-          clearInterval(heartInterval);
-          clearInterval(fireworkInterval);
-          clearInterval(capybaraInterval);
-        }, 60000);
+          const angle = (i / 8) * Math.PI * 2;
+          const radius = 150;
+          const moveX = Math.cos(angle) * radius;
+          const moveY = Math.sin(angle) * radius;
 
-        // Add capybara couple to the success message
-        const capybaraCouple = document.getElementById("capybaraCouple");
-        capybaraCouple.appendChild(createCapybaraCouple());
-      });
+          emoji.style.left = x + "px";
+          emoji.style.top = y + "px";
+          emoji.style.setProperty("--moveX", moveX + "px");
+          emoji.style.setProperty("--moveY", moveY + "px");
+
+          document.body.appendChild(emoji);
+          setTimeout(() => emoji.remove(), 1500);
+        }
+      }
+
+      function getUniqueQuestion() {
+        const availableQuestions = sweetQuestions.filter((q) => !recentQuestions.includes(q));
+        if (availableQuestions.length === 0) {
+          recentQuestions = [];
+          return sweetQuestions[Math.floor(Math.random() * sweetQuestions.length)];
+        }
+        const question = availableQuestions[Math.floor(Math.random() * availableQuestions.length)];
+        recentQuestions.push(question);
+        if (recentQuestions.length > 5) {
+          recentQuestions.shift();
+        }
+        return question;
+      }
+
+      function createNewButton() {
+        const newBtn = document.createElement("button");
+        newBtn.className = "moving-button";
+        newBtn.textContent = getUniqueQuestion();
+
+        const padding = 50;
+        const maxX = window.innerWidth - 300;
+        const maxY = window.innerHeight - 60;
+        const newX = Math.max(padding, Math.min(maxX - padding, Math.random() * maxX));
+        const newY = Math.max(padding, Math.min(maxY - padding, Math.random() * maxY));
+
+        newBtn.style.left = newX + "px";
+        newBtn.style.top = newY + "px";
+
+        newBtn.onclick = (e) => {
+          clickCount++;
+          const yesBtn = document.getElementById("yesBtn");
+          const newScale = 1 + clickCount * 0.35;
+          yesBtn.style.transform = `scale(${newScale})`;
+          createEmojiExplosion(e.clientX, e.clientY);
+          createNewButton();
+          newBtn.remove();
+        };
+
+        document.body.appendChild(newBtn);
+      }
+
+      // Add click handlers
+      const noBtn = document.getElementById("noBtn");
+      if (noBtn) {
+        noBtn.onclick = (e) => {
+          clickCount++;
+          const yesBtn = document.getElementById("yesBtn");
+          const newScale = 1 + clickCount * 0.35;
+          yesBtn.style.transform = `scale(${newScale})`;
+          createEmojiExplosion(e.clientX, e.clientY);
+          createNewButton();
+          noBtn.remove();
+        };
+      }
+
+      const yesBtn = document.getElementById("yesBtn");
+      if (yesBtn) {
+        yesBtn.onclick = () => {
+          document.querySelectorAll(".moving-button").forEach((btn) => btn.remove());
+
+          const container = document.querySelector(".container");
+          container.innerHTML = `
+                    <div class="success-message">
+                        <h1 style="font-size: 3em; margin-bottom: 30px;">YAAAAY! 🎉</h1>
+                        <p style="font-size: 1.5em; margin-bottom: 20px;">You've made my heart skip a beat! 💖</p>
+                        <p style="font-size: 1.2em; margin-bottom: 30px;">Get ready for the most amazing Valentine's ever!</p>
+                        <div style="font-size: 4em; margin: 30px 0;" id="capybaraCouple"></div>
+                    </div>
+                `;
+
+          // Add capybara couple to the success message
+          const capybaraCouple = document.getElementById("capybaraCouple");
+          capybaraCouple.appendChild(createCapybaraCouple());
+
+          // Start celebration effects
+          let heartInterval = setInterval(createHeart, 200);
+          let fireworkInterval = setInterval(createFirework, 300);
+
+          // Stop celebrations after 1 minute
+          setTimeout(() => {
+            clearInterval(heartInterval);
+            clearInterval(fireworkInterval);
+          }, 60000);
+        };
+      }
     </script>
   </body>
 </html>

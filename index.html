@@ -84,8 +84,6 @@
         transition: all 0.3s;
         backdrop-filter: blur(5px);
         min-width: 100px;
-        z-index: 10;
-        position: relative;
       }
 
       button:hover {
@@ -379,39 +377,51 @@
       }
 
       function createCapybaraCouple() {
+        // Create main SVG with more space
         const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-        svg.setAttribute("viewBox", "0 0 400 120");
-        svg.setAttribute("width", "400");
-        svg.setAttribute("height", "120");
+        // Make viewbox wider to give more room
+        svg.setAttribute("viewBox", "-100 -50 1000 300");
+        svg.setAttribute("width", "1000");
+        svg.setAttribute("height", "300");
 
-        // Capybara positioned on the left
+        // Left side - Capybara group
+        const capyGroup = document.createElementNS("http://www.w3.org/2000/svg", "g");
         const capy = createSVGCapybara();
-        capy.setAttribute("transform", "translate(20, 5) scale(2.4)");
+        capyGroup.appendChild(capy);
+        // Position capybara on left side, facing right
+        capyGroup.setAttribute("transform", "translate(100, 50) scale(2.5) scale(-1, 1)");
 
-        // Goose positioned on the right
-        const goose = createGoose();
-        goose.setAttribute("transform", "translate(280, 10) scale(1.1)");
-
-        // Heart centered between them
+        // Center - Heart group
+        const heartGroup = document.createElementNS("http://www.w3.org/2000/svg", "g");
         const heart = document.createElementNS("http://www.w3.org/2000/svg", "path");
         heart.setAttribute(
           "d",
           `
-                M 150 35
-                C 150 20 140 10 125 10
-                C 110 10 100 20 100 35
-                C 100 50 125 65 150 80
-                C 175 65 200 50 200 35
-                C 200 20 190 10 175 10
-                C 160 10 150 20 150 35
-            `
+      M 150 35
+      C 150 20 140 10 125 10
+      C 110 10 100 20 100 35
+      C 100 50 125 65 150 80
+      C 175 65 200 50 200 35
+      C 200 20 190 10 175 10
+      C 160 10 150 20 150 35
+    `
         );
         heart.setAttribute("fill", "#FF69B4");
-        heart.setAttribute("transform", "translate(50, 0) scale(0.8)");
+        heartGroup.appendChild(heart);
+        // Center the heart
+        heartGroup.setAttribute("transform", "translate(350, 80) scale(1.5)");
 
-        svg.appendChild(heart);
-        svg.appendChild(capy);
-        svg.appendChild(goose);
+        // Right side - Goose group
+        const gooseGroup = document.createElementNS("http://www.w3.org/2000/svg", "g");
+        const goose = createGoose();
+        gooseGroup.appendChild(goose);
+        // Position goose on right side, facing left
+        gooseGroup.setAttribute("transform", "translate(700, 50) scale(-2.5, 2.5)");
+
+        // Add each group to the main SVG
+        svg.appendChild(capyGroup);
+        svg.appendChild(heartGroup);
+        svg.appendChild(gooseGroup);
 
         return svg;
       }
@@ -496,50 +506,46 @@
         document.body.appendChild(newBtn);
       }
 
-      // Add click handlers
+      // Add click handlers immediately
       const noBtn = document.getElementById("noBtn");
-      if (noBtn) {
-        noBtn.onclick = (e) => {
-          clickCount++;
-          const yesBtn = document.getElementById("yesBtn");
-          const newScale = 1 + clickCount * 0.35;
-          yesBtn.style.transform = `scale(${newScale})`;
-          createEmojiExplosion(e.clientX, e.clientY);
-          createNewButton();
-          noBtn.remove();
-        };
-      }
+      noBtn.onclick = (e) => {
+        clickCount++;
+        const yesBtn = document.getElementById("yesBtn");
+        const newScale = 1 + clickCount * 0.35;
+        yesBtn.style.transform = `scale(${newScale})`;
+        createEmojiExplosion(e.clientX, e.clientY);
+        createNewButton();
+        noBtn.remove();
+      };
 
       const yesBtn = document.getElementById("yesBtn");
-      if (yesBtn) {
-        yesBtn.onclick = () => {
-          document.querySelectorAll(".moving-button").forEach((btn) => btn.remove());
+      yesBtn.onclick = () => {
+        document.querySelectorAll(".moving-button").forEach((btn) => btn.remove());
 
-          const container = document.querySelector(".container");
-          container.innerHTML = `
-                    <div class="success-message">
-                        <h1 style="font-size: 3em; margin-bottom: 30px;">YAAAAY! 🎉</h1>
-                        <p style="font-size: 1.5em; margin-bottom: 20px;">You've made my heart skip a beat! 💖</p>
-                        <p style="font-size: 1.2em; margin-bottom: 30px;">Get ready for the most amazing Valentine's ever!</p>
-                        <div style="font-size: 4em; margin: 30px 0;" id="capybaraCouple"></div>
-                    </div>
-                `;
+        const container = document.querySelector(".container");
+        container.innerHTML = `
+                <div class="success-message">
+                    <h1 style="font-size: 3em; margin-bottom: 30px;">YAAAAY! 🎉</h1>
+                    <p style="font-size: 1.5em; margin-bottom: 20px;">You've made my heart skip a beat! 💖</p>
+                    <p style="font-size: 1.2em; margin-bottom: 30px;">Get ready for the most amazing Valentine's ever!</p>
+                    <div style="font-size: 4em; margin: 30px 0; width: 1000px; height: 200px;" id="capybaraCouple"></div>
+                </div>
+            `;
 
-          // Add capybara couple to the success message
-          const capybaraCouple = document.getElementById("capybaraCouple");
-          capybaraCouple.appendChild(createCapybaraCouple());
+        // Add capybara couple to the success message
+        const capybaraCouple = document.getElementById("capybaraCouple");
+        capybaraCouple.appendChild(createCapybaraCouple());
 
-          // Start celebration effects
-          let heartInterval = setInterval(createHeart, 200);
-          let fireworkInterval = setInterval(createFirework, 300);
+        // Start celebration effects
+        let heartInterval = setInterval(createHeart, 200);
+        let fireworkInterval = setInterval(createFirework, 300);
 
-          // Stop celebrations after 1 minute
-          setTimeout(() => {
-            clearInterval(heartInterval);
-            clearInterval(fireworkInterval);
-          }, 60000);
-        };
-      }
+        // Stop celebrations after 1 minute
+        setTimeout(() => {
+          clearInterval(heartInterval);
+          clearInterval(fireworkInterval);
+        }, 60000);
+      };
     </script>
   </body>
 </html>

@@ -1,8 +1,10 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
   <head>
     <title>Be My Valentine?</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="theme-color" content="#e73c7e" />
     <style>
       * {
         margin: 0;
@@ -10,15 +12,20 @@
         box-sizing: border-box;
       }
 
+      html {
+        -webkit-tap-highlight-color: transparent;
+      }
+
       html,
       body {
         width: 100%;
-        height: 100%;
-        overflow: hidden;
+        min-height: 100%;
+        min-height: 100dvh;
+        overflow-x: hidden;
       }
 
       body {
-        font-family: Arial, sans-serif;
+        font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
         display: flex;
         flex-direction: column;
         align-items: center;
@@ -26,113 +33,127 @@
         background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab);
         background-size: 400% 400%;
         animation: gradient 15s ease infinite;
-        min-height: 100vh;
+        padding: 1rem;
+        padding-bottom: env(safe-area-inset-bottom);
       }
 
       @keyframes gradient {
-        0% {
-          background-position: 0% 50%;
-        }
-        50% {
-          background-position: 100% 50%;
-        }
-        100% {
-          background-position: 0% 50%;
-        }
+        0% { background-position: 0% 50%; }
+        50% { background-position: 100% 50%; }
+        100% { background-position: 0% 50%; }
       }
 
       .container {
         text-align: center;
-        background: rgba(255, 255, 255, 0.1);
-        padding: 2rem;
-        border-radius: 20px;
-        backdrop-filter: blur(5px);
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        z-index: 1;
-        margin: 20px;
+        background: rgba(0, 0, 0, 0.2);
+        padding: clamp(1.25rem, 5vw, 2rem);
+        border-radius: clamp(16px, 4vw, 20px);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        box-shadow: 0 4px 24px rgba(0, 0, 0, 0.15);
+        width: 100%;
         max-width: 90%;
+        z-index: 1;
       }
 
       h1 {
-        color: white;
-        font-size: 2.5em;
-        margin-bottom: 20px;
-        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+        color: #fff;
+        font-size: clamp(1.5rem, 6vw, 2.5rem);
+        margin-bottom: clamp(0.75rem, 3vw, 1.25rem);
+        text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.4), 0 0 20px rgba(0, 0, 0, 0.2);
+        line-height: 1.3;
       }
 
       p {
-        color: white;
-        font-size: 1.2em;
-        margin-bottom: 30px;
-        text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
+        color: rgba(255, 255, 255, 0.95);
+        font-size: clamp(1rem, 3.5vw, 1.2rem);
+        margin-bottom: clamp(1.25rem, 4vw, 1.875rem);
+        text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.4);
+        line-height: 1.5;
       }
 
       .buttons {
         display: flex;
-        gap: 20px;
+        flex-wrap: wrap;
+        gap: clamp(0.75rem, 4vw, 1.25rem);
         justify-content: center;
+        align-items: center;
       }
 
       button {
         background-color: rgba(255, 255, 255, 0.2);
-        color: white;
-        border: 2px solid white;
-        padding: 15px 32px;
-        font-size: 16px;
+        color: #fff;
+        border: 2px solid rgba(255, 255, 255, 0.9);
+        padding: clamp(0.875rem, 4vw, 1rem) clamp(1.5rem, 6vw, 2rem);
+        font-size: clamp(1rem, 4vw, 1.125rem);
         cursor: pointer;
-        border-radius: 25px;
-        transition: all 0.3s;
+        border-radius: 999px;
+        transition: transform 0.2s, background-color 0.2s;
         backdrop-filter: blur(5px);
+        -webkit-backdrop-filter: blur(5px);
         min-width: 100px;
+        min-height: 48px;
+        touch-action: manipulation;
       }
 
-      button:hover {
+      button:hover,
+      button:focus-visible {
         background-color: rgba(255, 255, 255, 0.3);
-        transform: scale(1.1);
+        transform: scale(1.05);
+        outline: 2px solid #fff;
+        outline-offset: 2px;
+      }
+
+      button:active {
+        transform: scale(0.98);
       }
 
       #yesBtn {
         background-color: rgba(255, 255, 255, 0.4);
-        font-weight: bold;
-        text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
-        box-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+        font-weight: 700;
+        text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.3);
+        box-shadow: 0 0 12px rgba(255, 255, 255, 0.4);
       }
 
       .moving-button {
         position: fixed;
         z-index: 1000;
-        background-color: rgba(255, 255, 255, 0.2);
-        color: white;
-        border: 2px solid white;
-        padding: 15px 32px;
-        font-size: 16px;
+        background-color: rgba(255, 255, 255, 0.25);
+        color: #fff;
+        border: 2px solid rgba(255, 255, 255, 0.9);
+        padding: clamp(0.75rem, 3vw, 1rem) clamp(1rem, 4vw, 1.5rem);
+        font-size: clamp(0.875rem, 3.5vw, 1rem);
         cursor: pointer;
-        border-radius: 25px;
-        transition: all 0.3s;
+        border-radius: 999px;
+        transition: transform 0.15s, background-color 0.15s;
         backdrop-filter: blur(5px);
+        -webkit-backdrop-filter: blur(5px);
         white-space: nowrap;
+        min-height: 48px;
+        touch-action: manipulation;
+        text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.3);
+      }
+
+      .moving-button:hover,
+      .moving-button:focus-visible {
+        background-color: rgba(255, 255, 255, 0.35);
+        transform: scale(1.05);
+        outline: 2px solid #fff;
+        outline-offset: 2px;
       }
 
       .heart {
         position: fixed;
         pointer-events: none;
-        z-index: 1000;
-        font-size: 24px;
+        z-index: 999;
+        font-size: clamp(20px, 5vw, 28px);
         animation: float-heart 4s ease-out forwards;
       }
 
       @keyframes float-heart {
-        0% {
-          transform: translateY(100vh) scale(0.3);
-          opacity: 0;
-        }
-        10% {
-          opacity: 1;
-        }
-        100% {
-          transform: translateY(-20vh) scale(1.5) rotate(360deg);
-          opacity: 0;
-        }
+        0% { transform: translateY(100vh) scale(0.3); opacity: 0; }
+        10% { opacity: 1; }
+        100% { transform: translateY(-20vh) scale(1.5) rotate(360deg); opacity: 0; }
       }
 
       .success-message {
@@ -140,49 +161,59 @@
       }
 
       @keyframes scale-in {
-        0% {
-          transform: scale(0);
-          opacity: 0;
-        }
-        100% {
-          transform: scale(1);
-          opacity: 1;
-        }
+        0% { transform: scale(0.8); opacity: 0; }
+        100% { transform: scale(1); opacity: 1; }
+      }
+
+      .success-message h1 {
+        font-size: clamp(1.75rem, 8vw, 3rem);
+      }
+
+      .success-message p {
+        font-size: clamp(1rem, 4vw, 1.5rem);
+      }
+
+      .capybara-wrapper {
+        width: 100%;
+        max-width: min(400px, 90vw);
+        margin: 1.5rem auto;
+        aspect-ratio: 10 / 3;
+      }
+
+      .capybara-wrapper svg {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
       }
 
       .emoji {
         position: fixed;
         pointer-events: none;
-        z-index: 1000;
-        font-size: 24px;
+        z-index: 999;
+        font-size: clamp(20px, 5vw, 28px);
         animation: spread-out 1.5s ease-out forwards;
       }
 
       @keyframes spread-out {
-        0% {
-          transform: translate(0, 0);
-          opacity: 0;
-        }
-        5% {
-          opacity: 1;
-        }
-        100% {
-          transform: translate(var(--moveX), var(--moveY));
-          opacity: 0;
-        }
+        0% { transform: translate(0, 0); opacity: 0; }
+        5% { opacity: 1; }
+        100% { transform: translate(var(--moveX), var(--moveY)); opacity: 0; }
       }
 
       .firework {
-        position: absolute;
+        position: fixed;
         pointer-events: none;
+        z-index: 999;
       }
 
       .firework::before {
         content: "";
         position: absolute;
-        width: 5px;
-        height: 5px;
+        width: 8px;
+        height: 8px;
         border-radius: 50%;
+        background: #fff;
+        box-shadow: 0 0 4px #fff;
         animation: firework-explode 2s ease-out forwards;
       }
 
@@ -190,25 +221,62 @@
         0% {
           transform: scale(1);
           opacity: 1;
-          box-shadow: 0 0 0 0 #fff, 0 0 0 0 #fff, 0 0 0 0 #fff, 0 0 0 0 #fff, 0 0 0 0 #fff, 0 0 0 0 #fff, 0 0 0 0 #fff, 0 0 0 0 #fff;
+          box-shadow: 0 0 0 0 #fff, 0 0 0 0 #fff, 0 0 0 0 #fff, 0 0 0 0 #fff,
+                      0 0 0 0 #fff, 0 0 0 0 #fff, 0 0 0 0 #fff, 0 0 0 0 #fff;
         }
         100% {
           transform: scale(0);
           opacity: 0;
-          box-shadow: -120px -120px 0 #fff, 120px -120px 0 #fff, -120px 120px 0 #fff, 120px 120px 0 #fff, 0 200px 0 #fff, 0 -200px 0 #fff, 200px 0 0 #fff, -200px 0 0 #fff;
+          box-shadow: -80px -80px 0 rgba(255,255,255,0.8), 80px -80px 0 rgba(255,255,255,0.8),
+                      -80px 80px 0 rgba(255,255,255,0.8), 80px 80px 0 rgba(255,255,255,0.8),
+                      0 -120px 0 rgba(255,255,255,0.8), 0 120px 0 rgba(255,255,255,0.8),
+                      120px 0 0 rgba(255,255,255,0.8), -120px 0 0 rgba(255,255,255,0.8);
         }
+      }
+
+      .no-clicks-count {
+        font-size: 0.9em;
+        opacity: 0.9;
+        margin-top: 1rem;
+      }
+
+      @media (min-width: 600px) {
+        .capybara-wrapper {
+          max-width: 500px;
+        }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        *, *::before, *::after {
+          animation-duration: 0.01ms !important;
+          animation-iteration-count: 1 !important;
+          transition-duration: 0.01ms !important;
+        }
+      }
+
+      .sr-only {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        border: 0;
       }
     </style>
   </head>
   <body>
-    <div class="container">
+    <div class="container" role="main">
       <h1>Will you be my Valentine?</h1>
       <p>I've been wanting to ask you...</p>
       <div class="buttons">
-        <button id="yesBtn">Yes</button>
-        <button id="noBtn">No</button>
+        <button id="yesBtn" aria-label="Say yes">Yes</button>
+        <button id="noBtn" aria-label="Say no">No</button>
       </div>
     </div>
+
+    <div id="liveRegion" aria-live="polite" aria-atomic="true" class="sr-only"></div>
 
     <script>
       const sweetQuestions = [
@@ -216,7 +284,7 @@
         "But what if I give you flowers? 🌸",
         "Maybe we could get coffee first? ☕",
         "What if I write you a love song? 🎵",
-        "I promise to make you smile everyday! 😊",
+        "I promise to make you smile every day! 😊",
         "We could watch sunsets together 🌅",
         "I'll bake you cookies! 🍪",
         "Think about all the adventures we'd have! ✨",
@@ -227,13 +295,26 @@
       const sadEmojis = ["😢", "😭", "🥺", "💔", "😿", "😥", "😓", "😔", "🥹", "😕"];
       let clickCount = 0;
       let recentQuestions = [];
+      let heartInterval = null;
+      let fireworkInterval = null;
+
+      function haptic() {
+        if (navigator.vibrate) navigator.vibrate(30);
+      }
+
+      function announce(message) {
+        const live = document.getElementById("liveRegion");
+        if (live) {
+          live.textContent = "";
+          live.textContent = message;
+        }
+      }
 
       function createSVGCapybara() {
         const svgNS = "http://www.w3.org/2000/svg";
         const svg = document.createElementNS(svgNS, "svg");
         svg.setAttribute("viewBox", "0 0 100 100");
 
-        // Body
         const body = document.createElementNS(svgNS, "ellipse");
         body.setAttribute("cx", "50");
         body.setAttribute("cy", "60");
@@ -241,14 +322,12 @@
         body.setAttribute("ry", "25");
         body.setAttribute("fill", "#916343");
 
-        // Head
         const head = document.createElementNS(svgNS, "circle");
         head.setAttribute("cx", "75");
         head.setAttribute("cy", "45");
         head.setAttribute("r", "20");
         head.setAttribute("fill", "#916343");
 
-        // Eyes
         const eye1 = document.createElementNS(svgNS, "circle");
         eye1.setAttribute("cx", "82");
         eye1.setAttribute("cy", "40");
@@ -261,7 +340,6 @@
         eye2.setAttribute("r", "3");
         eye2.setAttribute("fill", "#000");
 
-        // Nose
         const nose = document.createElementNS(svgNS, "ellipse");
         nose.setAttribute("cx", "77");
         nose.setAttribute("cy", "48");
@@ -269,7 +347,6 @@
         nose.setAttribute("ry", "4");
         nose.setAttribute("fill", "#573d2a");
 
-        // Ears
         const ear1 = document.createElementNS(svgNS, "circle");
         ear1.setAttribute("cx", "85");
         ear1.setAttribute("cy", "30");
@@ -282,7 +359,6 @@
         ear2.setAttribute("r", "7");
         ear2.setAttribute("fill", "#916343");
 
-        // Legs
         const leg1 = document.createElementNS(svgNS, "rect");
         leg1.setAttribute("x", "35");
         leg1.setAttribute("y", "75");
@@ -315,7 +391,6 @@
         const svg = document.createElementNS(svgNS, "svg");
         svg.setAttribute("viewBox", "0 0 100 100");
 
-        // Body
         const body = document.createElementNS(svgNS, "ellipse");
         body.setAttribute("cx", "50");
         body.setAttribute("cy", "60");
@@ -323,7 +398,6 @@
         body.setAttribute("ry", "25");
         body.setAttribute("fill", "#FFFFFF");
 
-        // Neck curve
         const neck = document.createElementNS(svgNS, "path");
         neck.setAttribute("d", "M60,45 Q70,35 65,25");
         neck.setAttribute("stroke", "#FFFFFF");
@@ -331,26 +405,22 @@
         neck.setAttribute("fill", "none");
         neck.setAttribute("stroke-linecap", "round");
 
-        // Head
         const head = document.createElementNS(svgNS, "circle");
         head.setAttribute("cx", "65");
         head.setAttribute("cy", "25");
         head.setAttribute("r", "12");
         head.setAttribute("fill", "#FFFFFF");
 
-        // Beak
         const beak = document.createElementNS(svgNS, "path");
         beak.setAttribute("d", "M65,25 L85,23 L65,28 Z");
         beak.setAttribute("fill", "#FF9800");
 
-        // Eye
         const eye = document.createElementNS(svgNS, "circle");
         eye.setAttribute("cx", "69");
         eye.setAttribute("cy", "23");
         eye.setAttribute("r", "2.5");
         eye.setAttribute("fill", "#000000");
 
-        // Legs
         const leg1 = document.createElementNS(svgNS, "rect");
         leg1.setAttribute("x", "35");
         leg1.setAttribute("y", "75");
@@ -377,48 +447,28 @@
       }
 
       function createCapybaraCouple() {
-        // Create main SVG with more space
-        const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-        // Make viewbox wider to give more room
+        const svgNS = "http://www.w3.org/2000/svg";
+        const svg = document.createElementNS(svgNS, "svg");
         svg.setAttribute("viewBox", "-100 -50 1000 300");
-        svg.setAttribute("width", "1000");
-        svg.setAttribute("height", "300");
+        svg.setAttribute("preserveAspectRatio", "xMidYMid meet");
 
-        // Left side - Capybara group
-        const capyGroup = document.createElementNS("http://www.w3.org/2000/svg", "g");
+        const capyGroup = document.createElementNS(svgNS, "g");
         const capy = createSVGCapybara();
         capyGroup.appendChild(capy);
-        // Position capybara on left side, facing right
         capyGroup.setAttribute("transform", "translate(100, 50) scale(2.5) scale(-1, 1)");
 
-        // Center - Heart group
-        const heartGroup = document.createElementNS("http://www.w3.org/2000/svg", "g");
-        const heart = document.createElementNS("http://www.w3.org/2000/svg", "path");
-        heart.setAttribute(
-          "d",
-          `
-      M 150 35
-      C 150 20 140 10 125 10
-      C 110 10 100 20 100 35
-      C 100 50 125 65 150 80
-      C 175 65 200 50 200 35
-      C 200 20 190 10 175 10
-      C 160 10 150 20 150 35
-    `
-        );
+        const heartGroup = document.createElementNS(svgNS, "g");
+        const heart = document.createElementNS(svgNS, "path");
+        heart.setAttribute("d", "M150 35 C150 20 140 10 125 10 C110 10 100 20 100 35 C100 50 125 65 150 80 C175 65 200 50 200 35 C200 20 190 10 175 10 C160 10 150 20 150 35");
         heart.setAttribute("fill", "#FF69B4");
         heartGroup.appendChild(heart);
-        // Center the heart
         heartGroup.setAttribute("transform", "translate(350, 80) scale(1.5)");
 
-        // Right side - Goose group
-        const gooseGroup = document.createElementNS("http://www.w3.org/2000/svg", "g");
+        const gooseGroup = document.createElementNS(svgNS, "g");
         const goose = createGoose();
         gooseGroup.appendChild(goose);
-        // Position goose on right side, facing left
         gooseGroup.setAttribute("transform", "translate(700, 50) scale(-2.5, 2.5)");
 
-        // Add each group to the main SVG
         svg.appendChild(capyGroup);
         svg.appendChild(heartGroup);
         svg.appendChild(gooseGroup);
@@ -430,7 +480,7 @@
         const heart = document.createElement("div");
         heart.className = "heart";
         heart.innerHTML = "❤️";
-        heart.style.left = Math.random() * (window.innerWidth - 50) + "px";
+        heart.style.left = Math.random() * Math.max(0, window.innerWidth - 50) + "px";
         document.body.appendChild(heart);
         setTimeout(() => heart.remove(), 4000);
       }
@@ -445,107 +495,144 @@
       }
 
       function createEmojiExplosion(x, y) {
-        for (let i = 0; i < 8; i++) {
+        const count = Math.min(8, Math.floor(window.innerWidth / 50));
+        for (let i = 0; i < count; i++) {
           const emoji = document.createElement("div");
           emoji.className = "emoji";
           emoji.textContent = sadEmojis[Math.floor(Math.random() * sadEmojis.length)];
-
-          const angle = (i / 8) * Math.PI * 2;
-          const radius = 150;
+          const angle = (i / count) * Math.PI * 2;
+          const radius = Math.min(150, window.innerWidth * 0.3);
           const moveX = Math.cos(angle) * radius;
           const moveY = Math.sin(angle) * radius;
-
           emoji.style.left = x + "px";
           emoji.style.top = y + "px";
           emoji.style.setProperty("--moveX", moveX + "px");
           emoji.style.setProperty("--moveY", moveY + "px");
-
           document.body.appendChild(emoji);
           setTimeout(() => emoji.remove(), 1500);
         }
       }
 
       function getUniqueQuestion() {
-        const availableQuestions = sweetQuestions.filter((q) => !recentQuestions.includes(q));
-        if (availableQuestions.length === 0) {
+        const available = sweetQuestions.filter((q) => !recentQuestions.includes(q));
+        if (available.length === 0) {
           recentQuestions = [];
           return sweetQuestions[Math.floor(Math.random() * sweetQuestions.length)];
         }
-        const question = availableQuestions[Math.floor(Math.random() * availableQuestions.length)];
-        recentQuestions.push(question);
-        if (recentQuestions.length > 5) {
-          recentQuestions.shift();
-        }
-        return question;
+        const q = available[Math.floor(Math.random() * available.length)];
+        recentQuestions.push(q);
+        if (recentQuestions.length > 5) recentQuestions.shift();
+        return q;
       }
 
-      function createNewButton() {
+      function createNewButton(question) {
+        const q = question ?? getUniqueQuestion();
         const newBtn = document.createElement("button");
         newBtn.className = "moving-button";
-        newBtn.textContent = getUniqueQuestion();
+        newBtn.textContent = q;
+        newBtn.setAttribute("aria-label", "No, " + q);
 
-        const padding = 50;
-        const maxX = window.innerWidth - 300;
-        const maxY = window.innerHeight - 60;
-        const newX = Math.max(padding, Math.min(maxX - padding, Math.random() * maxX));
-        const newY = Math.max(padding, Math.min(maxY - padding, Math.random() * maxY));
+        const btnWidth = Math.min(220, window.innerWidth - 48);
+        const btnHeight = 56;
+        const padding = 24;
+        const maxX = Math.max(0, window.innerWidth - btnWidth - padding * 2);
+        const maxY = Math.max(0, window.innerHeight - btnHeight - padding * 2);
+        const newX = padding + Math.random() * maxX;
+        const newY = padding + Math.random() * maxY;
 
         newBtn.style.left = newX + "px";
         newBtn.style.top = newY + "px";
 
-        newBtn.onclick = (e) => {
+        const getEventCoords = (e) => {
+          if (e.clientX != null) return { x: e.clientX, y: e.clientY };
+          const t = e.changedTouches?.[0] ?? e.touches?.[0];
+          return t ? { x: t.clientX, y: t.clientY } : { x: window.innerWidth / 2, y: window.innerHeight / 2 };
+        };
+
+        const handleNoClick = (e) => {
+          haptic();
           clickCount++;
           const yesBtn = document.getElementById("yesBtn");
-          const newScale = 1 + clickCount * 0.35;
-          yesBtn.style.transform = `scale(${newScale})`;
-          createEmojiExplosion(e.clientX, e.clientY);
-          createNewButton();
+          if (yesBtn) yesBtn.style.transform = `scale(${1 + clickCount * 0.35})`;
+          const { x, y } = getEventCoords(e);
+          createEmojiExplosion(x, y);
+          const nextQ = getUniqueQuestion();
+          createNewButton(nextQ);
+          announce(nextQ);
           newBtn.remove();
         };
+
+        newBtn.addEventListener("click", handleNoClick);
+        newBtn.addEventListener("touchend", (e) => {
+          if (e.cancelable) e.preventDefault();
+          handleNoClick(e);
+        }, { passive: false });
 
         document.body.appendChild(newBtn);
       }
 
-      // Add click handlers immediately
+      function stopCelebrations() {
+        if (heartInterval) {
+          clearInterval(heartInterval);
+          heartInterval = null;
+        }
+        if (fireworkInterval) {
+          clearInterval(fireworkInterval);
+          fireworkInterval = null;
+        }
+      }
+
+      window.addEventListener("beforeunload", stopCelebrations);
+
       const noBtn = document.getElementById("noBtn");
-      noBtn.onclick = (e) => {
+      noBtn.addEventListener("click", (e) => {
+        haptic();
         clickCount++;
         const yesBtn = document.getElementById("yesBtn");
-        const newScale = 1 + clickCount * 0.35;
-        yesBtn.style.transform = `scale(${newScale})`;
+        yesBtn.style.transform = `scale(${1 + clickCount * 0.35})`;
         createEmojiExplosion(e.clientX, e.clientY);
-        createNewButton();
+        const q = getUniqueQuestion();
+        announce(q);
+        createNewButton(q);
         noBtn.remove();
-      };
+      });
 
       const yesBtn = document.getElementById("yesBtn");
-      yesBtn.onclick = () => {
+      yesBtn.addEventListener("click", () => {
+        haptic();
         document.querySelectorAll(".moving-button").forEach((btn) => btn.remove());
 
         const container = document.querySelector(".container");
-        container.innerHTML = `
-                <div class="success-message">
-                    <h1 style="font-size: 3em; margin-bottom: 30px;">YAAAAY! 🎉</h1>
-                    <p style="font-size: 1.5em; margin-bottom: 20px;">You've made my heart skip a beat! 💖</p>
-                    <p style="font-size: 1.2em; margin-bottom: 30px;">Get ready for the most amazing Valentine's ever!</p>
-                    <div style="font-size: 4em; margin: 30px 0; width: 1000px; height: 200px;" id="capybaraCouple"></div>
-                </div>
-            `;
+        const clicksText = clickCount > 0
+          ? `<p class="no-clicks-count">(After ${clickCount} "No"s — you couldn't resist! 😏)</p>`
+          : "";
 
-        // Add capybara couple to the success message
+        container.innerHTML = `
+          <div class="success-message">
+            <h1>YAAAAY! 🎉</h1>
+            <p>You've made my heart skip a beat! 💖</p>
+            <p>Get ready for the most amazing Valentine's ever!</p>
+            <div class="capybara-wrapper" id="capybaraCouple" aria-hidden="true"></div>
+            ${clicksText}
+          </div>
+        `;
+
         const capybaraCouple = document.getElementById("capybaraCouple");
         capybaraCouple.appendChild(createCapybaraCouple());
 
-        // Start celebration effects
-        let heartInterval = setInterval(createHeart, 200);
-        let fireworkInterval = setInterval(createFirework, 300);
+        announce("YAAAAY! You said yes! You've made my heart skip a beat.");
 
-        // Stop celebrations after 1 minute
-        setTimeout(() => {
-          clearInterval(heartInterval);
-          clearInterval(fireworkInterval);
-        }, 60000);
-      };
+        stopCelebrations();
+        const isMobile = window.innerWidth < 600 || "ontouchstart" in window;
+        const heartDelay = isMobile ? 350 : 200;
+        const fireworkDelay = isMobile ? 450 : 300;
+
+        heartInterval = setInterval(createHeart, heartDelay);
+        fireworkInterval = setInterval(createFirework, fireworkDelay);
+
+        setTimeout(stopCelebrations, 60000);
+      });
+
     </script>
   </body>
 </html>

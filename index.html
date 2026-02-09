@@ -80,7 +80,8 @@
       cursor: pointer;
       user-select: none;
       display: inline-block;
-      transition: transform 0.18s ease;
+      transform-origin: center;
+      transition: transform 0.32s cubic-bezier(0.34, 1.56, 0.64, 1);
       margin-top: 10px;
     }
 
@@ -88,6 +89,36 @@
       outline: 2px solid var(--pink);
       outline-offset: 4px;
       border-radius: 8px;
+    }
+
+    .heart.pop {
+      animation: heartPop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+      pointer-events: none;
+    }
+
+    @keyframes heartPop {
+      0% { transform: scale(var(--pop-scale, 1)); opacity: 1; }
+      40% { transform: scale(calc(var(--pop-scale, 1) * 1.4)); opacity: 1; }
+      100% { transform: scale(calc(var(--pop-scale, 1) * 2.2)); opacity: 0; }
+    }
+
+    .burst-particle {
+      position: fixed;
+      font-size: clamp(1.2rem, 3vw, 1.6rem);
+      pointer-events: none;
+      z-index: 10;
+      animation: burstOut 0.6s ease-out forwards;
+    }
+
+    @keyframes burstOut {
+      0% {
+        transform: translate(0, 0) scale(0.5);
+        opacity: 1;
+      }
+      100% {
+        transform: translate(var(--bx), var(--by)) scale(1);
+        opacity: 0;
+      }
     }
 
     .love-bar {
@@ -153,12 +184,14 @@
       font-size: clamp(1.05rem, 2.4vw, 1.2rem);
       font-weight: 600;
       cursor: pointer;
-      transition: transform 0.15s ease, background 0.2s ease;
+      box-shadow: 0 4px 14px rgba(31, 41, 55, 0.12);
+      transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.2s ease, background 0.2s ease;
       touch-action: manipulation;
     }
 
     button:active {
-      transform: scale(0.96);
+      transform: scale(0.97) translateY(2px);
+      box-shadow: 0 1px 4px rgba(31, 41, 55, 0.15);
     }
 
     button:focus-visible {
@@ -174,6 +207,18 @@
     .maybe {
       background: rgba(255, 255, 255, 0.85);
       color: var(--text);
+    }
+
+    .btn-shake {
+      animation: btnShake 0.4s ease-in-out;
+    }
+
+    @keyframes btnShake {
+      0%, 100% { transform: translateX(0); }
+      20% { transform: translateX(-6px); }
+      40% { transform: translateX(5px); }
+      60% { transform: translateX(-4px); }
+      80% { transform: translateX(3px); }
     }
 
     .success {
@@ -365,8 +410,30 @@
       "knew u'd come around"
     ];
 
+    const successPopHeadlines = [
+      "you popped it 😭",
+      "RIP heart 💔",
+      "okay that was intense",
+      "heart.exe has stopped",
+      "you really went for it",
+      "ded 💀"
+    ];
+
+    const successPopSublines = [
+      "that counts as a yes",
+      "aggressive yes but still yes",
+      "the heart couldn't take it",
+      "valentine achieved through violence",
+      "still a yes though 💗"
+    ];
+
     let taps = 0;
     let maybeClicks = 0;
+    let extraTaps = 0;
+    let rapidTapTimeout = null;
+    let isPopping = false;
+    const RAPID_TAP_MS = 500;
+    const POP_AFTER_TAPS = 5;
 
     function updateLoveBar() {
       const progress = Math.min(taps, messages.length);
@@ -374,14 +441,17 @@
       loveBarFill.style.width = `${percent}%`;
     }
 
+    const GROWTH_PER_TAP = 0.03;
+    const MAX_GROWTH = 0.5;
+
     function squish() {
-      const rot = (Math.random() * 12 - 6).toFixed(1);
-      heart.style.transform = `scale(0.92) rotate(${rot}deg)`;
+      const newBaseScale = 1 + Math.min((taps + 1) * GROWTH_PER_TAP, MAX_GROWTH);
+      heart.style.transform = "scale(0.92)";
       setTimeout(() => {
-        heart.style.transform = `scale(1.08) rotate(${rot}deg)`;
+        heart.style.transform = `scale(${newBaseScale * 1.08})`;
       }, 70);
       setTimeout(() => {
-        heart.style.transform = `scale(1) rotate(0deg)`;
+        heart.style.transform = `scale(${newBaseScale})`;
       }, 140);
     }
 
@@ -397,13 +467,68 @@
       setTimeout(() => p.remove(), 2500);
     }
 
+    function burstParticle(cx, cy) {
+      const p = document.createElement("div");
+      p.className = "burst-particle";
+      p.textContent = ["💗","💞","🫶","❤️","💕","✨"][Math.floor(Math.random()*6)];
+      const angle = Math.random() * Math.PI * 2;
+      const dist = 80 + Math.random() * 120;
+      const tx = Math.cos(angle) * dist;
+      const ty = Math.sin(angle) * dist - 40;
+      p.style.left = cx + "px";
+      p.style.top = cy + "px";
+      p.style.setProperty("--bx", tx + "px");
+      p.style.setProperty("--by", ty + "px");
+      document.body.appendChild(p);
+      setTimeout(() => p.remove(), 600);
+    }
+
+    function triggerPop() {
+      if (isPopping) return;
+      isPopping = true;
+
+      const rect = heart.getBoundingClientRect();
+      const cx = rect.left + rect.width / 2;
+      const cy = rect.top + rect.height / 2;
+      let currentScale = 1;
+      const matrix = getComputedStyle(heart).transform;
+      if (matrix && matrix !== "none") {
+        const m = matrix.match(/matrix\(([^)]+)\)/);
+        if (m) currentScale = parseFloat(m[1].split(",")[0]) || 1;
+      }
+      heart.style.setProperty("--pop-scale", String(currentScale));
+      heart.classList.add("pop");
+
+      for (let i = 0; i < 16; i++) {
+        setTimeout(() => burstParticle(cx, cy), i * 30);
+      }
+
+      setTimeout(() => {
+        heart.classList.remove("pop");
+        heart.style.removeProperty("--pop-scale");
+        heart.style.transform = "scale(1)";
+        showSuccess(false, true);
+      }, 1200);
+    }
+
     function handleHeartTap() {
+      if (isPopping) return;
+
       document.body.classList.add("tapped");
       setTimeout(() => document.body.classList.remove("tapped"), 250);
       squish();
       particle();
 
-      if (taps >= messages.length) return;
+      if (taps >= messages.length) {
+        clearTimeout(rapidTapTimeout);
+        extraTaps++;
+        if (extraTaps >= POP_AFTER_TAPS) {
+          triggerPop();
+          return;
+        }
+        rapidTapTimeout = setTimeout(() => { extraTaps = 0; }, RAPID_TAP_MS);
+        return;
+      }
 
       message.textContent = messages[taps];
       message.classList.add("show");
@@ -435,11 +560,16 @@
       next.focus();
     }
 
-    function showSuccess(fromMaybe = false) {
-      successTitle.textContent = successHeadlines[Math.floor(Math.random() * successHeadlines.length)];
-      successSub.textContent = fromMaybe
-        ? successMaybeSublines[Math.floor(Math.random() * successMaybeSublines.length)]
-        : successSublines[Math.floor(Math.random() * successSublines.length)];
+    function showSuccess(fromMaybe = false, fromPop = false) {
+      if (fromPop) {
+        successTitle.textContent = successPopHeadlines[Math.floor(Math.random() * successPopHeadlines.length)];
+        successSub.textContent = successPopSublines[Math.floor(Math.random() * successPopSublines.length)];
+      } else {
+        successTitle.textContent = successHeadlines[Math.floor(Math.random() * successHeadlines.length)];
+        successSub.textContent = fromMaybe
+          ? successMaybeSublines[Math.floor(Math.random() * successMaybeSublines.length)]
+          : successSublines[Math.floor(Math.random() * successSublines.length)];
+      }
       success.classList.add("show");
       success.removeAttribute("aria-hidden");
       if (app) app.setAttribute("aria-hidden", "true");
@@ -465,12 +595,16 @@
       maybeClicks++;
       if (maybeClicks <= MAYBE_GIVE_IN) {
         maybeBtn.textContent = maybeTexts[maybeClicks - 1];
-        maybeBtn.style.transform = `translateX(${Math.random() * 12 - 6}px)`;
+        maybeBtn.classList.remove("btn-shake");
+        void maybeBtn.offsetWidth;
+        maybeBtn.classList.add("btn-shake");
+        setTimeout(() => maybeBtn.classList.remove("btn-shake"), 400);
         return;
       }
       maybeBtn.textContent = "yes duh 💗";
       maybeBtn.classList.add("yes");
       maybeBtn.classList.remove("maybe");
+      maybeBtn.style.transform = "";
       maybeBtn.removeEventListener("click", handleMaybeClick);
       maybeBtn.addEventListener("click", yesAfterMaybe);
       buttons.classList.add("single-yes");
@@ -480,7 +614,7 @@
 
     function resetMaybeButton() {
       maybeBtn.textContent = "i'm scared 😭";
-      maybeBtn.classList.remove("yes");
+      maybeBtn.classList.remove("yes", "btn-shake");
       maybeBtn.classList.add("maybe");
       maybeBtn.style.transform = "";
       maybeBtn.removeEventListener("click", yesAfterMaybe);
@@ -497,8 +631,13 @@
       message.textContent = "";
       taps = 0;
       maybeClicks = 0;
+      extraTaps = 0;
+      isPopping = false;
+      clearTimeout(rapidTapTimeout);
       updateLoveBar();
-      heart.style.transform = "scale(1) rotate(0deg)";
+      heart.classList.remove("pop");
+      heart.style.removeProperty("--pop-scale");
+      heart.style.transform = "scale(1)";
       resetMaybeButton();
       buttons.classList.remove("single-yes");
       heart.focus();

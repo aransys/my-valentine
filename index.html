@@ -176,12 +176,18 @@
       pointer-events: auto;
     }
 
-    .success h1 {
-      font-size: 2.5rem;
-      margin-bottom: 0.5rem;
+    .success-inner {
+      cursor: pointer;
+      padding: 1rem;
     }
 
-    .success p {
+    .success-title {
+      font-size: 2.5rem;
+      margin-bottom: 0.5rem;
+      animation: success-pop 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    }
+
+    .success-sub {
       font-size: 1.1rem;
       color: var(--soft);
     }
@@ -190,6 +196,18 @@
       font-size: 2.25rem;
       margin-top: 1rem;
       animation: wiggle 0.5s ease-in-out infinite;
+    }
+
+    .success-tap-hint {
+      font-size: 0.85rem;
+      color: var(--soft);
+      margin-top: 0.75rem;
+      opacity: 0.8;
+    }
+
+    @keyframes success-pop {
+      0% { transform: scale(0.8); opacity: 0; }
+      100% { transform: scale(1); opacity: 1; }
     }
 
     @keyframes wiggle {
@@ -242,10 +260,11 @@
   </div>
 
   <div class="success" id="success">
-    <div>
-      <h1>ok wow</h1>
-      <p>that was a yes</p>
+    <div class="success-inner" id="successInner">
+      <h1 class="success-title" id="successTitle">ok wow</h1>
+      <p class="success-sub" id="successSub">that was a yes</p>
       <div class="success-hearts" aria-hidden="true">💞 😭 🫶 💗 ✨</div>
+      <p class="success-tap-hint" id="successTapHint">tap for more hearts 💗</p>
       <button class="yes replay-btn" id="replay" type="button">play again</button>
     </div>
   </div>
@@ -258,6 +277,9 @@
     const yesBtn = document.getElementById("yes");
     const maybeBtn = document.getElementById("maybe");
     const success = document.getElementById("success");
+    const successInner = document.getElementById("successInner");
+    const successTitle = document.getElementById("successTitle");
+    const successSub = document.getElementById("successSub");
     const replayBtn = document.getElementById("replay");
 
     const messages = [
@@ -287,6 +309,28 @@
     ];
 
     const MAYBE_GIVE_IN = 3;
+
+    const successHeadlines = [
+      "ok wow",
+      "let's gooo",
+      "yes!!!",
+      "we're doing this 💗",
+      "omg okay",
+      "i'm so happy"
+    ];
+
+    const successSublines = [
+      "that was a yes",
+      "u said yes",
+      "valentine mode: on",
+      "best answer ever"
+    ];
+
+    const successMaybeSublines = [
+      "that was a yes (eventually 💗)",
+      "okay fine that's a yes",
+      "knew u'd come around"
+    ];
 
     let taps = 0;
     let maybeClicks = 0;
@@ -331,13 +375,12 @@
     }
 
     function handleHeartTap() {
-      if (taps >= messages.length) return;
-
       document.body.classList.add("tapped");
       setTimeout(() => document.body.classList.remove("tapped"), 250);
-
       squish();
       particle();
+
+      if (taps >= messages.length) return;
 
       message.textContent = messages[taps];
       message.classList.add("show");
@@ -359,14 +402,27 @@
       }
     });
 
-    function showSuccess() {
+    function showSuccess(fromMaybe = false) {
+      successTitle.textContent = successHeadlines[Math.floor(Math.random() * successHeadlines.length)];
+      successSub.textContent = fromMaybe
+        ? successMaybeSublines[Math.floor(Math.random() * successMaybeSublines.length)]
+        : successSublines[Math.floor(Math.random() * successSublines.length)];
       success.classList.add("show");
       for (let i = 0; i < 25; i++) {
         setTimeout(particle, i * 80);
       }
     }
 
-    yesBtn.addEventListener("click", showSuccess);
+    yesBtn.addEventListener("click", () => showSuccess(false));
+
+    successInner.addEventListener("click", (e) => {
+      if (e.target.closest("#replay")) return;
+      for (let i = 0; i < 5; i++) setTimeout(() => particle(), i * 40);
+    });
+
+    function yesAfterMaybe() {
+      showSuccess(false);
+    }
 
     function handleMaybeClick() {
       maybeClicks++;
@@ -375,8 +431,8 @@
         maybeBtn.classList.add("yes");
         maybeBtn.classList.remove("maybe");
         maybeBtn.removeEventListener("click", handleMaybeClick);
-        maybeBtn.addEventListener("click", showSuccess);
-        showSuccess();
+        maybeBtn.addEventListener("click", yesAfterMaybe);
+        showSuccess(true);
         return;
       }
       maybeBtn.textContent = maybeTexts[Math.min(maybeClicks - 1, maybeTexts.length - 1)];
@@ -397,7 +453,7 @@
       maybeBtn.classList.remove("yes");
       maybeBtn.classList.add("maybe");
       maybeBtn.style.transform = "";
-      maybeBtn.removeEventListener("click", showSuccess);
+      maybeBtn.removeEventListener("click", yesAfterMaybe);
       maybeBtn.addEventListener("click", handleMaybeClick);
       for (const dot of dotsWrap.children) {
         dot.classList.remove("filled");

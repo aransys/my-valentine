@@ -618,6 +618,7 @@
       maybeBtn.classList.add("maybe");
       maybeBtn.style.transform = "";
       maybeBtn.removeEventListener("click", yesAfterMaybe);
+      maybeBtn.removeEventListener("click", handleMaybeClick);
       maybeBtn.addEventListener("click", handleMaybeClick);
     }
 

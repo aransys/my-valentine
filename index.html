@@ -2,7 +2,9 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#ffedf5" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
   <title>Will you be my Valentine?</title>
 
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -16,6 +18,10 @@
       padding: 0;
     }
 
+    html {
+      -webkit-tap-highlight-color: transparent;
+    }
+
     :root {
       --bg: linear-gradient(135deg, #ffd6e8, #e0ccff, #cce6ff);
       --text: #1f2937;
@@ -25,12 +31,17 @@
 
     body {
       min-height: 100vh;
+      min-height: 100dvh;
       font-family: "Inter", system-ui, sans-serif;
       background: var(--bg);
       display: flex;
       align-items: center;
       justify-content: center;
       padding: 1.5rem;
+      padding-left: max(1.5rem, env(safe-area-inset-left));
+      padding-right: max(1.5rem, env(safe-area-inset-right));
+      padding-bottom: max(1.5rem, env(safe-area-inset-bottom));
+      padding-top: max(1.5rem, env(safe-area-inset-top));
       overflow: hidden;
       transition: background 0.25s ease;
     }
@@ -132,12 +143,14 @@
 
     button {
       border: none;
-      padding: 1rem;
+      padding: 1rem 1.25rem;
+      min-height: 44px;
       border-radius: 14px;
       font-size: 1rem;
       font-weight: 600;
       cursor: pointer;
       transition: transform 0.15s ease, background 0.2s ease;
+      touch-action: manipulation;
     }
 
     button:active {
@@ -169,6 +182,7 @@
       opacity: 0;
       pointer-events: none;
       transition: opacity 0.5s ease;
+      padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
     }
 
     .success.show {
@@ -179,6 +193,9 @@
     .success-inner {
       cursor: pointer;
       padding: 1rem;
+      user-select: none;
+      -webkit-user-select: none;
+      touch-action: manipulation;
     }
 
     .success-title {

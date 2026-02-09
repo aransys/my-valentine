@@ -306,8 +306,15 @@
     .success-tap-hint {
       font-size: clamp(0.95rem, 2.2vw, 1.1rem);
       color: var(--soft);
-      margin-top: 0.75rem;
+      margin-top: 1.5rem;
       opacity: 0.8;
+    }
+
+    .success-confetti-zone {
+      padding: 1.5rem 2rem 2.5rem;
+      margin: -1rem -2rem 0;
+      min-height: 12rem;
+      cursor: pointer;
     }
 
     @keyframes success-pop {
@@ -321,7 +328,8 @@
     }
 
     .replay-btn {
-      margin-top: 1.5rem;
+      margin-top: 2rem;
+      flex-shrink: 0;
     }
 
     .particle {
@@ -380,10 +388,12 @@
 
   <div class="success" id="success" role="dialog" aria-modal="true" aria-labelledby="successTitle" aria-describedby="successSub" aria-hidden="true">
     <div class="success-inner" id="successInner" tabindex="-1">
-      <h1 class="success-title" id="successTitle">ok wow</h1>
-      <p class="success-sub" id="successSub">that was a yes</p>
-      <div class="success-hearts" aria-hidden="true">💞 😭 🫶 💗 ✨</div>
-      <p class="success-tap-hint" id="successTapHint">tap for more confetti ✨</p>
+      <div class="success-confetti-zone" id="successConfettiZone">
+        <h1 class="success-title" id="successTitle">ok wow</h1>
+        <p class="success-sub" id="successSub">that was a yes</p>
+        <div class="success-hearts" aria-hidden="true">💞 😭 🫶 💗 ✨</div>
+        <p class="success-tap-hint" id="successTapHint">tap for more confetti ✨</p>
+      </div>
       <button class="yes replay-btn" id="replay" type="button">play again</button>
     </div>
   </div>

@@ -629,6 +629,10 @@
       tapConfettiBurst(e.clientX / window.innerWidth, e.clientY / window.innerHeight);
     });
 
+    function yesAfterMaybe() {
+      showSuccess(true);
+    }
+
     function handleMaybeClick() {
       vibrate(25);
       maybeClicks++;
@@ -643,7 +647,7 @@
       maybeBtn.classList.add("yes");
       maybeBtn.classList.remove("maybe");
       maybeBtn.removeEventListener("click", handleMaybeClick);
-      maybeBtn.addEventListener("click", () => showSuccess(true));
+      maybeBtn.addEventListener("click", yesAfterMaybe);
       buttons.classList.add("single-yes");
     }
 
@@ -663,7 +667,8 @@
       maybeBtn.textContent = "i'm scared 😭";
       maybeBtn.classList.add("maybe");
       maybeBtn.classList.remove("yes");
-      maybeBtn.removeEventListener("click", () => showSuccess(true));
+      maybeBtn.removeEventListener("click", yesAfterMaybe);
+      maybeBtn.removeEventListener("click", handleMaybeClick);
       maybeBtn.addEventListener("click", handleMaybeClick);
       updateLoveBar();
       heart.focus();

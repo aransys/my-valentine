@@ -81,7 +81,7 @@
       display: inline-block;
       transform-origin: center;
       transform: scale(1);
-      transition: transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+      transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     }
 
     .heart {
@@ -92,16 +92,34 @@
       transform-origin: center;
       margin-top: 10px;
       -webkit-font-smoothing: antialiased;
+      transition: transform 0.2s ease-out;
+    }
+
+    /* SMOOTH PULSE ANIMATION */
+    @keyframes tapBounce {
+      0% { transform: scale(1); }
+      25% { transform: scale(0.8); }
+      50% { transform: scale(1.2); }
+      100% { transform: scale(1); }
     }
 
     .heart.tap {
-      animation: tapBounce 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+      animation: tapBounce 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     }
 
-    @keyframes tapBounce {
-      0% { transform: scale(0.96); }
-      50% { transform: scale(1.05); }
-      100% { transform: scale(1); }
+    /* RUMBLE ANIMATION */
+    @keyframes rumble {
+      0% { transform: translate(0, 0) rotate(0deg); }
+      20% { transform: translate(-2px, 1px) rotate(-1deg); }
+      40% { transform: translate(-2px, -1px) rotate(1deg); }
+      60% { transform: translate(2px, 1px) rotate(0deg); }
+      80% { transform: translate(2px, -1px) rotate(1deg); }
+      100% { transform: translate(0, 0) rotate(0deg); }
+    }
+
+    .rumble {
+      animation: rumble 0.08s linear infinite;
+      filter: drop-shadow(0 0 12px rgba(255, 77, 141, 0.6));
     }
 
     .heart:focus-visible {
@@ -391,82 +409,31 @@
       navigator.vibrate(pattern);
     }
 
-    // --- Text Content ---
     const messages = [
-      "hey",
-      "okay wait",
-      "why is this cute",
-      "don’t stop",
-      "omg",
-      "okay that was kinda cute",
-      "stoppp",
-      "why is this working",
-      "no seriously",
-      "don't stop now",
-      "keep going",
-      "i'm weak",
-      "omg omg",
-      "WAIT",
-      "okay yeah",
-      "fine you win"
+      "hey", "okay wait", "why is this cute", "don’t stop", "omg",
+      "okay that was kinda cute", "stoppp", "why is this working",
+      "no seriously", "don't stop now", "keep going", "i'm weak",
+      "omg omg", "WAIT", "okay yeah", "fine you win"
     ];
 
-    const maybeTexts = [
-      "idk…",
-      "don't look at me",
-      "wait"
-    ];
-
+    const maybeTexts = ["idk…", "don't look at me", "wait"];
     const MAYBE_GIVE_IN = maybeTexts.length;
 
-    const successHeadlines = [
-      "ok wow",
-      "let's gooo",
-      "yes!!!",
-      "we're doing this 💗",
-      "omg okay",
-      "i'm so happy"
-    ];
-
-    const successSublines = [
-      "that was a yes",
-      "u said yes",
-      "valentine mode: on",
-      "best answer ever"
-    ];
-
-    const successMaybeSublines = [
-      "knew you'd fold lol 💗",
-      "okay fine that's a yes",
-      "knew u'd come around"
-    ];
-
-    const successPopHeadlines = [
-      "you popped it 😭",
-      "RIP heart 💔",
-      "okay that was intense",
-      "heart.exe has stopped",
-      "you really went for it",
-      "ded 💀"
-    ];
-
-    const successPopSublines = [
-      "that counts as a yes",
-      "aggressive yes but still yes",
-      "the heart couldn't take it",
-      "valentine achieved through violence",
-      "still a yes though 💗"
-    ];
+    const successHeadlines = ["ok wow", "let's gooo", "yes!!!", "we're doing this 💗", "omg okay", "i'm so happy"];
+    const successSublines = ["that was a yes", "u said yes", "valentine mode: on", "best answer ever"];
+    const successMaybeSublines = ["knew you'd fold lol 💗", "okay fine that's a yes", "knew u'd come around"];
+    const successPopHeadlines = ["you popped it 😭", "RIP heart 💔", "okay that was intense", "heart.exe has stopped", "you really went for it", "ded 💀"];
+    const successPopSublines = ["that counts as a yes", "aggressive yes but still yes", "the heart couldn't take it", "valentine achieved through violence", "still a yes though 💗"];
 
     let taps = 0;
     let maybeClicks = 0;
     let extraTaps = 0;
     let rapidTapTimeout = null;
     let isPopping = false;
-    const RAPID_TAP_MS = 500;
-    const POP_AFTER_TAPS = 5;
-    const GROWTH_PER_TAP = 0.03;
-    const MAX_GROWTH = 0.5;
+    const RAPID_TAP_MS = 600;
+    const POP_AFTER_TAPS = 6;
+    const GROWTH_PER_TAP = 0.035;
+    const MAX_GROWTH = 0.6;
     let heartScale = 1;
 
     function updateLoveBar() {
@@ -476,12 +443,18 @@
     }
 
     function squish() {
+      // 1. Permanent Growth on Wrapper
       heartScale = 1 + Math.min((taps + 1) * GROWTH_PER_TAP, MAX_GROWTH);
       heartGrow.style.transform = `scale(${heartScale})`;
+      
+      // 2. Pulse Animation on Heart
       heart.classList.remove("tap");
-      void heart.offsetWidth;
+      void heart.offsetWidth; 
       heart.classList.add("tap");
-      setTimeout(() => heart.classList.remove("tap"), 350);
+      
+      // 3. Dynamic Rotation
+      const randomRotation = (Math.random() - 0.5) * 8;
+      heart.style.transform = `rotate(${randomRotation}deg)`;
     }
 
     function particle() {
@@ -515,7 +488,8 @@
     function triggerPop() {
       if (isPopping) return;
       isPopping = true;
-      vibrate([40, 25, 40]);
+      heart.classList.remove("rumble");
+      vibrate([60, 40, 60]);
 
       const rect = heartGrow.getBoundingClientRect();
       const cx = rect.left + rect.width / 2;
@@ -523,7 +497,7 @@
       heartGrow.style.setProperty("--pop-scale", String(heartScale));
       heartGrow.classList.add("pop");
 
-      for (let i = 0; i < 16; i++) {
+      for (let i = 0; i < 20; i++) {
         setTimeout(() => burstParticle(cx, cy), i * 30);
       }
 
@@ -542,23 +516,40 @@
       setTimeout(() => document.body.classList.remove("tapped"), 250);
       
       squish();
-      vibrate(25);
       particle();
+
+      let vibrationIntensity = 25;
 
       if (taps >= messages.length) {
         clearTimeout(rapidTapTimeout);
         extraTaps++;
+
+        // Intensifying Vibration & Rumble
+        vibrationIntensity = 25 + (extraTaps * 15);
+        
+        if (extraTaps >= POP_AFTER_TAPS / 2) {
+          heart.classList.add("rumble");
+          vibrate([vibrationIntensity, 30, vibrationIntensity]);
+        } else {
+          vibrate(vibrationIntensity);
+        }
+
         if (extraTaps >= POP_AFTER_TAPS) {
           triggerPop();
           return;
         }
-        rapidTapTimeout = setTimeout(() => { extraTaps = 0; }, RAPID_TAP_MS);
+
+        rapidTapTimeout = setTimeout(() => { 
+          extraTaps = 0; 
+          heart.classList.remove("rumble");
+        }, RAPID_TAP_MS);
+        
         return;
       }
 
+      vibrate(vibrationIntensity);
       message.textContent = messages[taps];
       message.classList.add("show");
-
       taps++;
       updateLoveBar();
 
@@ -576,36 +567,25 @@
     });
 
     const FOCUSABLES = [successInner, replayBtn];
-
     function trapFocus(e) {
       if (e.key !== "Tab" || !success.classList.contains("show")) return;
       const idx = FOCUSABLES.indexOf(document.activeElement);
-      if (idx === -1) return;
       const next = e.shiftKey ? FOCUSABLES[(idx - 1 + FOCUSABLES.length) % FOCUSABLES.length] : FOCUSABLES[(idx + 1) % FOCUSABLES.length];
       e.preventDefault();
       next.focus();
     }
 
     function triggerConfetti() {
-      if (typeof confetti !== 'function') return;
       const duration = 3000;
-      const animationEnd = Date.now() + duration;
-      const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 200 };
-      const randomInRange = (min, max) => Math.random() * (max - min) + min;
-
+      const end = Date.now() + duration;
       const interval = setInterval(function() {
-        const timeLeft = animationEnd - Date.now();
-        if (timeLeft <= 0) return clearInterval(interval);
-        const particleCount = 50 * (timeLeft / duration);
-        confetti(Object.assign({}, defaults, { particleCount, origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 } }));
-        confetti(Object.assign({}, defaults, { particleCount, origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 } }));
+        if (Date.now() > end) return clearInterval(interval);
+        confetti({ startVelocity: 30, spread: 360, ticks: 60, zIndex: 200, particleCount: 40, origin: { x: Math.random(), y: Math.random() - 0.2 } });
       }, 250);
     }
 
     function tapConfettiBurst(x = 0.5, y = 0.5) {
-      if (typeof confetti !== 'function') return;
-      confetti({ particleCount: 30, spread: 70, origin: { x, y }, startVelocity: 25, zIndex: 200 });
-      confetti({ particleCount: 20, spread: 50, origin: { x, y }, startVelocity: 20, scalar: 0.8, zIndex: 200 });
+      confetti({ particleCount: 35, spread: 70, origin: { x, y }, startVelocity: 25, zIndex: 200 });
     }
 
     function showSuccess(fromMaybe = false, fromPop = false) {
@@ -617,33 +597,21 @@
         successSub.textContent = successPopSublines[Math.floor(Math.random() * successPopSublines.length)];
       } else {
         successTitle.textContent = successHeadlines[Math.floor(Math.random() * successHeadlines.length)];
-        successSub.textContent = fromMaybe
-          ? successMaybeSublines[Math.floor(Math.random() * successMaybeSublines.length)]
-          : successSublines[Math.floor(Math.random() * successSublines.length)];
+        successSub.textContent = fromMaybe ? successMaybeSublines[Math.floor(Math.random() * successMaybeSublines.length)] : successSublines[Math.floor(Math.random() * successSublines.length)];
       }
       success.classList.add("show");
       success.removeAttribute("aria-hidden");
       if (app) app.setAttribute("aria-hidden", "true");
       document.addEventListener("keydown", trapFocus);
       requestAnimationFrame(() => successInner.focus());
-      for (let i = 0; i < 25; i++) {
-        setTimeout(particle, i * 80);
-      }
     }
 
     yesBtn.addEventListener("click", () => showSuccess(false));
-
     successInner.addEventListener("click", (e) => {
       if (e.target.closest("#replay")) return;
       vibrate(15);
-      const x = e.clientX / window.innerWidth;
-      const y = e.clientY / window.innerHeight;
-      tapConfettiBurst(x, y);
+      tapConfettiBurst(e.clientX / window.innerWidth, e.clientY / window.innerHeight);
     });
-
-    function yesAfterMaybe() {
-      showSuccess(true);
-    }
 
     function handleMaybeClick() {
       vibrate(25);
@@ -653,58 +621,35 @@
         maybeBtn.classList.remove("btn-shake");
         void maybeBtn.offsetWidth;
         maybeBtn.classList.add("btn-shake");
-        setTimeout(() => maybeBtn.classList.remove("btn-shake"), 400);
         return;
       }
-      // Conversion to YES
       maybeBtn.textContent = "yes duh 💗";
       maybeBtn.classList.add("yes");
       maybeBtn.classList.remove("maybe");
-      maybeBtn.style.transform = "";
       maybeBtn.removeEventListener("click", handleMaybeClick);
-      maybeBtn.addEventListener("click", yesAfterMaybe);
+      maybeBtn.addEventListener("click", () => showSuccess(true));
       buttons.classList.add("single-yes");
     }
 
     maybeBtn.addEventListener("click", handleMaybeClick);
 
-    // FIXED: Replay Logic
-    function resetMaybeButton() {
-      maybeBtn.textContent = "i'm scared 😭";
-      maybeBtn.classList.remove("yes", "btn-shake");
-      maybeBtn.classList.add("maybe");
-      maybeBtn.style.transform = "";
-      
-      // CRITICAL FIX: Remove BOTH listeners to ensure clean state
-      maybeBtn.removeEventListener("click", yesAfterMaybe);
-      maybeBtn.removeEventListener("click", handleMaybeClick);
-      
-      // Add back the original listener
-      maybeBtn.addEventListener("click", handleMaybeClick);
-    }
-
     replayBtn.addEventListener("click", () => {
       vibrate(25);
       success.classList.remove("show");
       success.setAttribute("aria-hidden", "true");
-      document.removeEventListener("keydown", trapFocus);
       if (app) app.removeAttribute("aria-hidden");
-      buttons.classList.remove("show");
+      buttons.classList.remove("show", "single-yes");
       message.classList.remove("show");
-      message.textContent = "";
-      taps = 0;
-      maybeClicks = 0; // Reset counter
-      extraTaps = 0;
-      isPopping = false;
-      clearTimeout(rapidTapTimeout);
-      updateLoveBar();
-      heart.classList.remove("tap");
-      heartGrow.classList.remove("pop");
-      heartGrow.style.removeProperty("--pop-scale");
+      taps = 0; maybeClicks = 0; extraTaps = 0; isPopping = false;
       heartScale = 1;
       heartGrow.style.transform = "scale(1)";
-      resetMaybeButton();
-      buttons.classList.remove("single-yes");
+      heart.classList.remove("rumble", "tap");
+      maybeBtn.textContent = "i'm scared 😭";
+      maybeBtn.classList.add("maybe");
+      maybeBtn.classList.remove("yes");
+      maybeBtn.removeEventListener("click", () => showSuccess(true));
+      maybeBtn.addEventListener("click", handleMaybeClick);
+      updateLoveBar();
       heart.focus();
     });
   </script>

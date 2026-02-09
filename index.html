@@ -77,27 +77,30 @@
       align-items: center;
     }
 
+    .heart-grow {
+      display: inline-block;
+      transform-origin: center;
+      transform: scale(1);
+      transition: transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    }
+
     .heart {
       font-size: clamp(4.5rem, 12vw, 6rem);
       cursor: pointer;
       user-select: none;
       display: inline-block;
       transform-origin: center;
-      transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
       margin-top: 10px;
-      /* Improve text rendering for emoji */
       -webkit-font-smoothing: antialiased;
     }
 
-    /* New CSS Animation for the squish effect */
-    .heart.beating {
-      animation: heartBeat 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-      transition: none; /* Disable transition during animation to prevent conflict */
+    .heart.tap {
+      animation: tapBounce 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
     }
 
-    @keyframes heartBeat {
-      0% { transform: scale(1); }
-      40% { transform: scale(0.85); }
+    @keyframes tapBounce {
+      0% { transform: scale(0.96); }
+      50% { transform: scale(1.05); }
       100% { transform: scale(1); }
     }
 
@@ -107,7 +110,7 @@
       border-radius: 8px;
     }
 
-    .heart.pop {
+    .heart-grow.pop {
       animation: heartPop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
       pointer-events: none;
     }
@@ -340,7 +343,9 @@
     <p class="hint">tap the heart</p>
 
     <div class="heart-wrap">
-      <div class="heart" id="heart" tabindex="0" role="button" aria-label="Tap the heart">❤️</div>
+      <div class="heart-grow" id="heartGrow">
+        <div class="heart" id="heart" tabindex="0" role="button" aria-label="Tap the heart">❤️</div>
+      </div>
     </div>
 
     <div class="love-bar" aria-hidden="true">
@@ -368,6 +373,7 @@
   <script>
     const app = document.querySelector(".app");
     const heart = document.getElementById("heart");
+    const heartGrow = document.getElementById("heartGrow");
     const message = document.getElementById("message");
     const loveBarFill = document.getElementById("loveBarFill");
     const buttons = document.getElementById("buttons");
@@ -459,6 +465,9 @@
     let isPopping = false;
     const RAPID_TAP_MS = 500;
     const POP_AFTER_TAPS = 5;
+    const GROWTH_PER_TAP = 0.03;
+    const MAX_GROWTH = 0.5;
+    let heartScale = 1;
 
     function updateLoveBar() {
       const progress = Math.min(taps, messages.length);
@@ -466,14 +475,13 @@
       loveBarFill.style.width = `${percent}%`;
     }
 
-    // UPDATED: CSS Animation Approach
     function squish() {
-      // Reset animation
-      heart.classList.remove("beating");
-      // Force reflow
+      heartScale = 1 + Math.min((taps + 1) * GROWTH_PER_TAP, MAX_GROWTH);
+      heartGrow.style.transform = `scale(${heartScale})`;
+      heart.classList.remove("tap");
       void heart.offsetWidth;
-      // Trigger animation
-      heart.classList.add("beating");
+      heart.classList.add("tap");
+      setTimeout(() => heart.classList.remove("tap"), 350);
     }
 
     function particle() {
@@ -509,26 +517,20 @@
       isPopping = true;
       vibrate([40, 25, 40]);
 
-      const rect = heart.getBoundingClientRect();
+      const rect = heartGrow.getBoundingClientRect();
       const cx = rect.left + rect.width / 2;
       const cy = rect.top + rect.height / 2;
-      let currentScale = 1;
-      const matrix = getComputedStyle(heart).transform;
-      if (matrix && matrix !== "none") {
-        const m = matrix.match(/matrix\(([^)]+)\)/);
-        if (m) currentScale = parseFloat(m[1].split(",")[0]) || 1;
-      }
-      heart.style.setProperty("--pop-scale", String(currentScale));
-      heart.classList.add("pop");
+      heartGrow.style.setProperty("--pop-scale", String(heartScale));
+      heartGrow.classList.add("pop");
 
       for (let i = 0; i < 16; i++) {
         setTimeout(() => burstParticle(cx, cy), i * 30);
       }
 
       setTimeout(() => {
-        heart.classList.remove("pop");
-        heart.style.removeProperty("--pop-scale");
-        heart.style.transform = "scale(1)";
+        heartGrow.classList.remove("pop");
+        heartGrow.style.removeProperty("--pop-scale");
+        heartGrow.style.transform = "scale(1)";
         showSuccess(false, true);
       }, 1200);
     }
@@ -682,6 +684,7 @@
     }
 
     replayBtn.addEventListener("click", () => {
+      vibrate(25);
       success.classList.remove("show");
       success.setAttribute("aria-hidden", "true");
       document.removeEventListener("keydown", trapFocus);
@@ -695,9 +698,11 @@
       isPopping = false;
       clearTimeout(rapidTapTimeout);
       updateLoveBar();
-      heart.classList.remove("pop", "beating");
-      heart.style.removeProperty("--pop-scale");
-      heart.style.transform = "scale(1)";
+      heart.classList.remove("tap");
+      heartGrow.classList.remove("pop");
+      heartGrow.style.removeProperty("--pop-scale");
+      heartScale = 1;
+      heartGrow.style.transform = "scale(1)";
       resetMaybeButton();
       buttons.classList.remove("single-yes");
       heart.focus();

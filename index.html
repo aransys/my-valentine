@@ -10,6 +10,8 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet" />
+  
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 
   <style>
     * {
@@ -81,8 +83,22 @@
       user-select: none;
       display: inline-block;
       transform-origin: center;
-      transition: transform 0.32s cubic-bezier(0.34, 1.56, 0.64, 1);
+      transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
       margin-top: 10px;
+      /* Improve text rendering for emoji */
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* New CSS Animation for the squish effect */
+    .heart.beating {
+      animation: heartBeat 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      transition: none; /* Disable transition during animation to prevent conflict */
+    }
+
+    @keyframes heartBeat {
+      0% { transform: scale(1); }
+      40% { transform: scale(0.85); }
+      100% { transform: scale(1); }
     }
 
     .heart:focus-visible {
@@ -233,6 +249,7 @@
       pointer-events: none;
       transition: opacity 0.5s ease;
       padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+      z-index: 100;
     }
 
     .success.show {
@@ -291,6 +308,7 @@
       font-size: clamp(1.6rem, 4vw, 2.1rem);
       pointer-events: none;
       animation: floatUp 2.5s ease forwards;
+      z-index: 5;
     }
 
     @keyframes floatUp {
@@ -342,7 +360,7 @@
       <h1 class="success-title" id="successTitle">ok wow</h1>
       <p class="success-sub" id="successSub">that was a yes</p>
       <div class="success-hearts" aria-hidden="true">💞 😭 🫶 💗 ✨</div>
-      <p class="success-tap-hint" id="successTapHint">tap for more hearts 💗</p>
+      <p class="success-tap-hint" id="successTapHint">tap for more confetti ✨</p>
       <button class="yes replay-btn" id="replay" type="button">play again</button>
     </div>
   </div>
@@ -361,6 +379,61 @@
     const successSub = document.getElementById("successSub");
     const replayBtn = document.getElementById("replay");
 
+    // --- Audio System (Web Audio API) ---
+    // This creates simple synthesized sounds without needing external files
+    let audioCtx = null;
+
+    function initAudio() {
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+      if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+    }
+
+    function playTone(freq, type = 'sine', duration = 0.1, delay = 0, volume = 0.03) {
+      if (!audioCtx) return;
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.type = type;
+      osc.frequency.setValueAtTime(freq, audioCtx.currentTime + delay);
+      gain.gain.setValueAtTime(volume, audioCtx.currentTime + delay);
+      gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + delay + duration);
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      osc.start(audioCtx.currentTime + delay);
+      osc.stop(audioCtx.currentTime + delay + duration);
+    }
+
+    function playTapSound() {
+      if (!audioCtx) return;
+      const freq = 520 + Math.random() * 120;
+      playTone(freq, 'sine', 0.06, 0, 0.025);
+      playTone(freq * 1.25, 'sine', 0.08, 0.02, 0.015);
+    }
+
+    function playSuccessSound() {
+      if (!audioCtx) return;
+      playTone(523.25, 'sine', 0.25, 0, 0.035);
+      playTone(659.25, 'sine', 0.25, 0.06, 0.03);
+      playTone(783.99, 'sine', 0.3, 0.12, 0.03);
+      playTone(1046.50, 'sine', 0.5, 0.18, 0.025);
+    }
+
+    function playPopSound() {
+      if (!audioCtx) return;
+      playTone(300, 'sine', 0.08, 0, 0.03);
+      playTone(220, 'sine', 0.12, 0.04, 0.025);
+    }
+
+    function vibrate(pattern) {
+      if (!navigator.vibrate) return;
+      if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+      navigator.vibrate(pattern);
+    }
+
+    // --- Text Content ---
     const messages = [
       "hey",
       "okay wait",
@@ -441,18 +514,14 @@
       loveBarFill.style.width = `${percent}%`;
     }
 
-    const GROWTH_PER_TAP = 0.03;
-    const MAX_GROWTH = 0.5;
-
+    // UPDATED: CSS Animation Approach
     function squish() {
-      const newBaseScale = 1 + Math.min((taps + 1) * GROWTH_PER_TAP, MAX_GROWTH);
-      heart.style.transform = "scale(0.92)";
-      setTimeout(() => {
-        heart.style.transform = `scale(${newBaseScale * 1.08})`;
-      }, 70);
-      setTimeout(() => {
-        heart.style.transform = `scale(${newBaseScale})`;
-      }, 140);
+      // Reset animation
+      heart.classList.remove("beating");
+      // Force reflow
+      void heart.offsetWidth;
+      // Trigger animation
+      heart.classList.add("beating");
     }
 
     function particle() {
@@ -486,6 +555,8 @@
     function triggerPop() {
       if (isPopping) return;
       isPopping = true;
+      playPopSound();
+      vibrate([40, 25, 40]);
 
       const rect = heart.getBoundingClientRect();
       const cx = rect.left + rect.width / 2;
@@ -512,11 +583,15 @@
     }
 
     function handleHeartTap() {
+      initAudio(); // Initialize audio context on first tap
       if (isPopping) return;
 
       document.body.classList.add("tapped");
       setTimeout(() => document.body.classList.remove("tapped"), 250);
+      
       squish();
+      playTapSound();
+      vibrate(25);
       particle();
 
       if (taps >= messages.length) {
@@ -560,7 +635,33 @@
       next.focus();
     }
 
+    function triggerConfetti() {
+      if (typeof confetti !== 'function') return;
+      const duration = 3000;
+      const animationEnd = Date.now() + duration;
+      const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 200 };
+      const randomInRange = (min, max) => Math.random() * (max - min) + min;
+
+      const interval = setInterval(function() {
+        const timeLeft = animationEnd - Date.now();
+        if (timeLeft <= 0) return clearInterval(interval);
+        const particleCount = 50 * (timeLeft / duration);
+        confetti(Object.assign({}, defaults, { particleCount, origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 } }));
+        confetti(Object.assign({}, defaults, { particleCount, origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 } }));
+      }, 250);
+    }
+
+    function tapConfettiBurst(x = 0.5, y = 0.5) {
+      if (typeof confetti !== 'function') return;
+      confetti({ particleCount: 30, spread: 70, origin: { x, y }, startVelocity: 25, zIndex: 200 });
+      confetti({ particleCount: 20, spread: 50, origin: { x, y }, startVelocity: 20, scalar: 0.8, zIndex: 200 });
+    }
+
     function showSuccess(fromMaybe = false, fromPop = false) {
+      playSuccessSound();
+      vibrate([30, 20, 30]);
+      triggerConfetti();
+
       if (fromPop) {
         successTitle.textContent = successPopHeadlines[Math.floor(Math.random() * successPopHeadlines.length)];
         successSub.textContent = successPopSublines[Math.floor(Math.random() * successPopSublines.length)];
@@ -580,18 +681,28 @@
       }
     }
 
-    yesBtn.addEventListener("click", () => showSuccess(false));
+    yesBtn.addEventListener("click", () => {
+      initAudio();
+      showSuccess(false);
+    });
 
     successInner.addEventListener("click", (e) => {
       if (e.target.closest("#replay")) return;
-      for (let i = 0; i < 5; i++) setTimeout(() => particle(), i * 40);
+      vibrate(15);
+      const x = e.clientX / window.innerWidth;
+      const y = e.clientY / window.innerHeight;
+      tapConfettiBurst(x, y);
     });
 
     function yesAfterMaybe() {
+      initAudio();
       showSuccess(true);
     }
 
     function handleMaybeClick() {
+      initAudio();
+      playTapSound();
+      vibrate(25);
       maybeClicks++;
       if (maybeClicks <= MAYBE_GIVE_IN) {
         maybeBtn.textContent = maybeTexts[maybeClicks - 1];
@@ -601,6 +712,7 @@
         setTimeout(() => maybeBtn.classList.remove("btn-shake"), 400);
         return;
       }
+      // Conversion to YES
       maybeBtn.textContent = "yes duh 💗";
       maybeBtn.classList.add("yes");
       maybeBtn.classList.remove("maybe");
@@ -612,13 +724,18 @@
 
     maybeBtn.addEventListener("click", handleMaybeClick);
 
+    // FIXED: Replay Logic
     function resetMaybeButton() {
       maybeBtn.textContent = "i'm scared 😭";
       maybeBtn.classList.remove("yes", "btn-shake");
       maybeBtn.classList.add("maybe");
       maybeBtn.style.transform = "";
+      
+      // CRITICAL FIX: Remove BOTH listeners to ensure clean state
       maybeBtn.removeEventListener("click", yesAfterMaybe);
       maybeBtn.removeEventListener("click", handleMaybeClick);
+      
+      // Add back the original listener
       maybeBtn.addEventListener("click", handleMaybeClick);
     }
 
@@ -631,12 +748,12 @@
       message.classList.remove("show");
       message.textContent = "";
       taps = 0;
-      maybeClicks = 0;
+      maybeClicks = 0; // Reset counter
       extraTaps = 0;
       isPopping = false;
       clearTimeout(rapidTapTimeout);
       updateLoveBar();
-      heart.classList.remove("pop");
+      heart.classList.remove("pop", "beating");
       heart.style.removeProperty("--pop-scale");
       heart.style.transform = "scale(1)";
       resetMaybeButton();

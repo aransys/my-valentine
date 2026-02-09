@@ -258,24 +258,22 @@
         }
       }
 
-      /* Runaway No button */
-      .btn-runaway {
+      /* No button in fixed spot (whack-a-mole + shrinking) */
+      .btn-no-spot {
         position: fixed;
         z-index: 1000;
         white-space: nowrap;
+        transition: transform 0.25s var(--ease);
       }
 
-      .btn-runaway.shake {
-        animation: shake 0.4s var(--ease) forwards;
+      .btn-no-spot.pop {
+        animation: no-pop 0.2s var(--ease) forwards;
       }
 
-      @keyframes shake {
-        0%, 100% { transform: translate(var(--x), var(--y)) scale(1); }
-        15% { transform: translate(calc(var(--x) - 4px), var(--y)) scale(1); }
-        30% { transform: translate(calc(var(--x) + 4px), var(--y)) scale(1); }
-        45% { transform: translate(calc(var(--x) - 3px), var(--y)) scale(1); }
-        60% { transform: translate(calc(var(--x) + 3px), var(--y)) scale(1); }
-        75% { transform: translate(calc(var(--x) - 2px), var(--y)) scale(1); }
+      @keyframes no-pop {
+        0% { transform: translate(var(--spotX), var(--spotY)) scale(var(--scale)); }
+        50% { transform: translate(var(--spotX), var(--spotY)) scale(calc(var(--scale) * 0.9)); }
+        100% { transform: translate(var(--spotX), var(--spotY)) scale(var(--scale)); }
       }
 
       /* ===== SUCCESS SCREEN ===== */
@@ -497,7 +495,6 @@
       let noCount = 0;
       let recentPrompts = [];
       let particleInterval = null;
-      let baseRunSpeed = 1;
 
       function haptic() {
         if (navigator.vibrate) navigator.vibrate(20);
@@ -549,7 +546,33 @@
         triggerSuccess();
       });
 
-      // === NO BUTTON (runaway) ===
+      // === NO BUTTON (whack-a-mole spots + shrinking) ===
+      const NUM_SPOTS = 6;
+      const SPOT_RADIUS = 0.42; // fraction of min screen dimension from center
+
+      function getSpotPositions() {
+        const cx = window.innerWidth / 2;
+        const cy = window.innerHeight / 2;
+        const r = Math.min(window.innerWidth, window.innerHeight) * SPOT_RADIUS;
+        const positions = [];
+        for (let i = 0; i < NUM_SPOTS; i++) {
+          const angle = (i / NUM_SPOTS) * Math.PI * 2 - Math.PI / 2; // start from top
+          positions.push({
+            x: cx + Math.cos(angle) * r,
+            y: cy + Math.sin(angle) * r,
+          });
+        }
+        return positions;
+      }
+
+      function getNextSpot(currentIndex) {
+        const others = [];
+        for (let i = 0; i < NUM_SPOTS; i++) {
+          if (i !== currentIndex) others.push(i);
+        }
+        return others[Math.floor(Math.random() * others.length)];
+      }
+
       function getPrompt() {
         const avail = PROMPTS.filter((p) => !recentPrompts.includes(p));
         if (avail.length === 0) {
@@ -558,62 +581,55 @@
         }
         const p = avail[Math.floor(Math.random() * avail.length)];
         recentPrompts.push(p);
-        if (recentPrompts.length > 5) recentPrompts.shift();
         return p;
       }
 
-      function createRunawayBtn(prompt) {
+      function getNoScale() {
+        return Math.max(0.5, 1 - noCount * 0.08);
+      }
+
+      function createNoSpotBtn(prompt, spotIndex) {
         const idx = PROMPTS.indexOf(prompt);
         const emoji = EMOJIS[idx] ?? "💕";
         const text = `${prompt} ${emoji}`;
 
         const btn = document.createElement("button");
-        btn.className = "btn btn-no btn-runaway";
+        btn.className = "btn btn-no btn-no-spot";
         btn.textContent = text;
         btn.setAttribute("aria-label", "No, " + text);
 
-        const padding = 24;
-        const w = Math.min(220, window.innerWidth - 48);
-        const h = 56;
-        const maxX = Math.max(0, window.innerWidth - w - padding * 2);
-        const maxY = Math.max(0, window.innerHeight - h - padding * 2);
+        const scale = getNoScale();
+        const spots = getSpotPositions();
+        const pos = spots[spotIndex];
+        const btnW = 180;
+        const btnH = 48;
+        const x = pos.x - (btnW * scale) / 2;
+        const y = pos.y - (btnH * scale) / 2;
 
-        let x = padding + Math.random() * maxX;
-        let y = padding + Math.random() * maxY;
-
-        btn.style.setProperty("--x", x + "px");
-        btn.style.setProperty("--y", y + "px");
         btn.style.left = "0";
         btn.style.top = "0";
-        btn.style.transform = `translate(${x}px, ${y}px)`;
-
-        const speed = baseRunSpeed * (1 + noCount * 0.15);
-        const run = () => {
-          const newX = padding + Math.random() * maxX;
-          const newY = padding + Math.random() * maxY;
-          btn.style.setProperty("--x", newX + "px");
-          btn.style.setProperty("--y", newY + "px");
-          btn.style.transition = `transform ${0.3 / speed}s var(--ease)`;
-          btn.style.transform = `translate(${newX}px, ${newY}px)`;
-        };
+        btn.style.setProperty("--spotX", x + "px");
+        btn.style.setProperty("--spotY", y + "px");
+        btn.style.setProperty("--scale", scale);
+        btn.style.transform = `translate(${x}px, ${y}px) scale(${scale})`;
+        btn.style.transformOrigin = "center center";
 
         const handleNo = (e) => {
           haptic();
           noCount++;
-          baseRunSpeed = Math.min(baseRunSpeed + 0.1, 2.5);
           const yesBtn = document.getElementById("btnYes");
           if (yesBtn) yesBtn.style.transform = `scale(${1 + noCount * 0.3})`;
           const cx = e.clientX ?? e.changedTouches?.[0]?.clientX ?? window.innerWidth / 2;
           const cy = e.clientY ?? e.changedTouches?.[0]?.clientY ?? window.innerHeight / 2;
           burstEmojis(cx, cy);
-          btn.classList.add("shake");
+          btn.classList.add("pop");
           setTimeout(() => {
-            run();
-            const next = getPrompt();
-            createRunawayBtn(next);
-            announce(next + " " + (EMOJIS[PROMPTS.indexOf(next)] ?? ""));
+            const nextPrompt = getPrompt();
+            const nextSpot = getNextSpot(spotIndex);
+            createNoSpotBtn(nextPrompt, nextSpot);
+            announce(nextPrompt + " " + (EMOJIS[PROMPTS.indexOf(nextPrompt)] ?? ""));
             btn.remove();
-          }, 420);
+          }, 220);
         };
 
         btn.addEventListener("click", handleNo);
@@ -628,7 +644,6 @@
       document.getElementById("btnNo").addEventListener("click", (e) => {
         haptic();
         noCount++;
-        baseRunSpeed = 1.2;
         const yesBtn = document.getElementById("btnYes");
         yesBtn.style.transform = `scale(${1 + noCount * 0.3})`;
         burstEmojis(e.clientX, e.clientY);
@@ -636,7 +651,9 @@
         announce(p + " " + (EMOJIS[PROMPTS.indexOf(p)] ?? ""));
         document.getElementById("btnNo").remove();
         document.getElementById("btnMaybe").remove();
-        createRunawayBtn(p);
+        const spots = getSpotPositions();
+        const spotIndex = Math.floor(Math.random() * NUM_SPOTS);
+        createNoSpotBtn(p, spotIndex);
       });
 
       function burstEmojis(x, y) {
@@ -657,7 +674,7 @@
       }
 
       function triggerSuccess() {
-        document.querySelectorAll(".btn-runaway").forEach((b) => b.remove());
+        document.querySelectorAll(".btn-no-spot").forEach((b) => b.remove());
 
         const statsEl = document.getElementById("stats");
         statsEl.textContent = noCount > 0

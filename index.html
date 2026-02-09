@@ -43,7 +43,8 @@
       padding-right: max(1.5rem, env(safe-area-inset-right));
       padding-bottom: max(1.5rem, env(safe-area-inset-bottom));
       padding-top: max(1.5rem, env(safe-area-inset-top));
-      overflow: hidden;
+      overflow-x: hidden;
+      overflow-y: auto;
       transition: background 0.25s ease;
     }
 
@@ -171,7 +172,8 @@
     }
 
     .maybe {
-      background: rgba(255,255,255,0.6);
+      background: rgba(255, 255, 255, 0.85);
+      color: var(--text);
     }
 
     .success {
@@ -260,6 +262,14 @@
     @keyframes fadeIn {
       to { opacity: 1; }
     }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
   </style>
 </head>
 <body>
@@ -282,7 +292,7 @@
     </div>
   </div>
 
-  <div class="success" id="success" role="dialog" aria-modal="true" aria-labelledby="successTitle" aria-describedby="successSub">
+  <div class="success" id="success" role="dialog" aria-modal="true" aria-labelledby="successTitle" aria-describedby="successSub" aria-hidden="true">
     <div class="success-inner" id="successInner" tabindex="-1">
       <h1 class="success-title" id="successTitle">ok wow</h1>
       <p class="success-sub" id="successSub">that was a yes</p>
@@ -379,7 +389,9 @@
       const p = document.createElement("div");
       p.className = "particle";
       p.textContent = ["💗","💞","🫶","😭"][Math.floor(Math.random()*4)];
-      p.style.left = Math.random() * window.innerWidth + "px";
+      const padding = 25;
+      const range = Math.max(0, window.innerWidth - padding * 2);
+      p.style.left = (padding + Math.random() * range) + "px";
       p.style.bottom = "-20px";
       document.body.appendChild(p);
       setTimeout(() => p.remove(), 2500);
@@ -412,13 +424,26 @@
       }
     });
 
+    const FOCUSABLES = [successInner, replayBtn];
+
+    function trapFocus(e) {
+      if (e.key !== "Tab" || !success.classList.contains("show")) return;
+      const idx = FOCUSABLES.indexOf(document.activeElement);
+      if (idx === -1) return;
+      const next = e.shiftKey ? FOCUSABLES[(idx - 1 + FOCUSABLES.length) % FOCUSABLES.length] : FOCUSABLES[(idx + 1) % FOCUSABLES.length];
+      e.preventDefault();
+      next.focus();
+    }
+
     function showSuccess(fromMaybe = false) {
       successTitle.textContent = successHeadlines[Math.floor(Math.random() * successHeadlines.length)];
       successSub.textContent = fromMaybe
         ? successMaybeSublines[Math.floor(Math.random() * successMaybeSublines.length)]
         : successSublines[Math.floor(Math.random() * successSublines.length)];
       success.classList.add("show");
+      success.removeAttribute("aria-hidden");
       if (app) app.setAttribute("aria-hidden", "true");
+      document.addEventListener("keydown", trapFocus);
       requestAnimationFrame(() => successInner.focus());
       for (let i = 0; i < 25; i++) {
         setTimeout(particle, i * 80);
@@ -453,8 +478,19 @@
 
     maybeBtn.addEventListener("click", handleMaybeClick);
 
+    function resetMaybeButton() {
+      maybeBtn.textContent = "i'm scared 😭";
+      maybeBtn.classList.remove("yes");
+      maybeBtn.classList.add("maybe");
+      maybeBtn.style.transform = "";
+      maybeBtn.removeEventListener("click", yesAfterMaybe);
+      maybeBtn.addEventListener("click", handleMaybeClick);
+    }
+
     replayBtn.addEventListener("click", () => {
       success.classList.remove("show");
+      success.setAttribute("aria-hidden", "true");
+      document.removeEventListener("keydown", trapFocus);
       if (app) app.removeAttribute("aria-hidden");
       buttons.classList.remove("show");
       message.classList.remove("show");
@@ -463,12 +499,7 @@
       maybeClicks = 0;
       updateLoveBar();
       heart.style.transform = "scale(1) rotate(0deg)";
-      maybeBtn.textContent = "i'm scared 😭";
-      maybeBtn.classList.remove("yes");
-      maybeBtn.classList.add("maybe");
-      maybeBtn.style.transform = "";
-      maybeBtn.removeEventListener("click", yesAfterMaybe);
-      maybeBtn.addEventListener("click", handleMaybeClick);
+      resetMaybeButton();
       buttons.classList.remove("single-yes");
       heart.focus();
     });

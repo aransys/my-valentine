@@ -55,8 +55,12 @@
 
     .heart-wrap {
       position: relative;
-      margin-bottom: 1.5rem;
+      margin-bottom: 2.25rem;
       touch-action: manipulation;
+      min-height: 140px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
     }
 
     .heart {
@@ -65,6 +69,7 @@
       user-select: none;
       display: inline-block;
       transition: transform 0.18s ease;
+      margin-top: 10px;
     }
 
     .heart:focus-visible {
@@ -74,18 +79,24 @@
     }
 
     .dots {
-      display: flex;
-      justify-content: center;
-      gap: 0.4rem;
-      margin-top: 1rem;
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      width: 220px;
+      height: 220px;
+      margin-left: -110px;
+      margin-top: -110px;
+      pointer-events: none;
     }
 
     .dot {
+      position: absolute;
       width: 8px;
       height: 8px;
       border-radius: 50%;
       background: rgba(0,0,0,0.2);
       transition: background 0.3s ease;
+      transform: translate(-50%, -50%);
     }
 
     .dot.filled {
@@ -279,23 +290,33 @@
 
     let taps = 0;
     let maybeClicks = 0;
-    let heartScale = 1;
 
-    // create dots
-    messages.forEach(() => {
+    // Heart shape: parametric curve, 16 points around the heart
+    function heartPoint(i, n) {
+      const t = (i / n) * 2 * Math.PI;
+      const x = 16 * Math.pow(Math.sin(t), 3);
+      const y = -(13 * Math.cos(t) - 5 * Math.cos(2*t) - 2 * Math.cos(3*t) - Math.cos(4*t));
+      return { x: x * 5.5, y: y * 5.5 };
+    }
+
+    // create dots in heart shape
+    messages.forEach((_, i) => {
       const dot = document.createElement("div");
       dot.className = "dot";
+      const { x, y } = heartPoint(i, messages.length);
+      dot.style.left = `calc(50% + ${x}px)`;
+      dot.style.top = `calc(50% + ${y}px)`;
       dotsWrap.appendChild(dot);
     });
 
     function squish() {
       const rot = (Math.random() * 12 - 6).toFixed(1);
-      heart.style.transform = `scale(${heartScale * 0.92}) rotate(${rot}deg)`;
+      heart.style.transform = `scale(0.92) rotate(${rot}deg)`;
       setTimeout(() => {
-        heart.style.transform = `scale(${heartScale * 1.08}) rotate(${rot}deg)`;
+        heart.style.transform = `scale(1.08) rotate(${rot}deg)`;
       }, 70);
       setTimeout(() => {
-        heart.style.transform = `scale(${heartScale}) rotate(0deg)`;
+        heart.style.transform = `scale(1) rotate(0deg)`;
       }, 140);
     }
 
@@ -324,7 +345,6 @@
       dotsWrap.children[taps].classList.add("filled");
 
       taps++;
-      heartScale = 1 + taps * 0.06;
 
       if (taps === messages.length) {
         setTimeout(() => buttons.classList.add("show"), 400);
@@ -372,7 +392,6 @@
       message.textContent = "";
       taps = 0;
       maybeClicks = 0;
-      heartScale = 1;
       heart.style.transform = "scale(1) rotate(0deg)";
       maybeBtn.textContent = "i'm scared 😭";
       maybeBtn.classList.remove("yes");

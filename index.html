@@ -33,6 +33,7 @@
       min-height: 100vh;
       min-height: 100dvh;
       font-family: "Inter", system-ui, sans-serif;
+      font-size: clamp(16px, 2.2vw, 20px);
       background: var(--bg);
       display: flex;
       align-items: center;
@@ -51,13 +52,12 @@
     }
 
     .app {
-      width: 100%;
-      max-width: 420px;
+      width: min(540px, 100%);
       text-align: center;
     }
 
     .hint {
-      font-size: 0.85rem;
+      font-size: clamp(0.95rem, 2.2vw, 1.1rem);
       color: var(--soft);
       margin-bottom: 2rem;
       opacity: 0;
@@ -66,16 +66,16 @@
 
     .heart-wrap {
       position: relative;
-      margin-bottom: 2.25rem;
+      margin-bottom: 2.5rem;
       touch-action: manipulation;
-      min-height: 140px;
+      min-height: clamp(160px, 35vw, 240px);
       display: flex;
       justify-content: center;
       align-items: center;
     }
 
     .heart {
-      font-size: 4rem;
+      font-size: clamp(4.5rem, 12vw, 6rem);
       cursor: pointer;
       user-select: none;
       display: inline-block;
@@ -89,36 +89,29 @@
       border-radius: 8px;
     }
 
-    .dots {
-      position: absolute;
-      left: 50%;
-      top: 50%;
-      width: 220px;
-      height: 220px;
-      margin-left: -110px;
-      margin-top: -110px;
-      pointer-events: none;
+    .love-bar {
+      width: min(420px, 85%);
+      height: clamp(14px, 3.6vw, 18px);
+      background: rgba(255, 255, 255, 0.7);
+      border-radius: 999px;
+      margin: 0 auto 2rem;
+      overflow: hidden;
+      box-shadow: 0 6px 18px rgba(31, 41, 55, 0.08);
     }
 
-    .dot {
-      position: absolute;
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      background: rgba(0,0,0,0.2);
-      transition: background 0.3s ease;
-      transform: translate(-50%, -50%);
-    }
-
-    .dot.filled {
-      background: var(--pink);
+    .love-bar-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, #ff4d8d, #ff7ab6);
+      border-radius: inherit;
+      transition: width 0.35s ease;
     }
 
     .message {
-      min-height: 2rem;
-      font-size: 1.1rem;
+      min-height: 2.5rem;
+      font-size: clamp(1.15rem, 2.6vw, 1.35rem);
       font-weight: 600;
-      margin: 1.5rem 0;
+      margin: 1.75rem 0;
       opacity: 0;
       transition: opacity 0.3s ease;
     }
@@ -141,12 +134,22 @@
       pointer-events: auto;
     }
 
+    .buttons.single-yes #yes {
+      display: none;
+    }
+
+    .buttons.single-yes #maybe {
+      width: 100%;
+      padding: 1.25rem 1.5rem;
+      font-size: clamp(1.2rem, 2.8vw, 1.4rem);
+    }
+
     button {
       border: none;
-      padding: 1rem 1.25rem;
-      min-height: 44px;
-      border-radius: 14px;
-      font-size: 1rem;
+      padding: 1.1rem 1.4rem;
+      min-height: 52px;
+      border-radius: 16px;
+      font-size: clamp(1.05rem, 2.4vw, 1.2rem);
       font-weight: 600;
       cursor: pointer;
       transition: transform 0.15s ease, background 0.2s ease;
@@ -199,24 +202,24 @@
     }
 
     .success-title {
-      font-size: 2.5rem;
+      font-size: clamp(2.75rem, 7vw, 3.6rem);
       margin-bottom: 0.5rem;
       animation: success-pop 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
     }
 
     .success-sub {
-      font-size: 1.1rem;
+      font-size: clamp(1.15rem, 2.6vw, 1.35rem);
       color: var(--soft);
     }
 
     .success-hearts {
-      font-size: 2.25rem;
+      font-size: clamp(2.4rem, 6vw, 3rem);
       margin-top: 1rem;
       animation: wiggle 0.5s ease-in-out infinite;
     }
 
     .success-tap-hint {
-      font-size: 0.85rem;
+      font-size: clamp(0.95rem, 2.2vw, 1.1rem);
       color: var(--soft);
       margin-top: 0.75rem;
       opacity: 0.8;
@@ -238,7 +241,7 @@
 
     .particle {
       position: fixed;
-      font-size: 1.5rem;
+      font-size: clamp(1.6rem, 4vw, 2.1rem);
       pointer-events: none;
       animation: floatUp 2.5s ease forwards;
     }
@@ -265,19 +268,22 @@
 
     <div class="heart-wrap">
       <div class="heart" id="heart" tabindex="0" role="button" aria-label="Tap the heart">❤️</div>
-      <div class="dots" id="dots"></div>
     </div>
 
-    <div class="message" id="message"></div>
+    <div class="love-bar" aria-hidden="true">
+      <div class="love-bar-fill" id="loveBarFill"></div>
+    </div>
+
+    <div class="message" id="message" aria-live="polite" aria-atomic="true"></div>
 
     <div class="buttons" id="buttons">
       <button class="yes" id="yes">yes duh 💗</button>
-      <button class="maybe" id="maybe">i’m scared 😭</button>
+      <button class="maybe" id="maybe">i'm scared 😭</button>
     </div>
   </div>
 
-  <div class="success" id="success">
-    <div class="success-inner" id="successInner">
+  <div class="success" id="success" role="dialog" aria-modal="true" aria-labelledby="successTitle" aria-describedby="successSub">
+    <div class="success-inner" id="successInner" tabindex="-1">
       <h1 class="success-title" id="successTitle">ok wow</h1>
       <p class="success-sub" id="successSub">that was a yes</p>
       <div class="success-hearts" aria-hidden="true">💞 😭 🫶 💗 ✨</div>
@@ -287,9 +293,10 @@
   </div>
 
   <script>
+    const app = document.querySelector(".app");
     const heart = document.getElementById("heart");
     const message = document.getElementById("message");
-    const dotsWrap = document.getElementById("dots");
+    const loveBarFill = document.getElementById("loveBarFill");
     const buttons = document.getElementById("buttons");
     const yesBtn = document.getElementById("yes");
     const maybeBtn = document.getElementById("maybe");
@@ -321,11 +328,10 @@
     const maybeTexts = [
       "idk…",
       "don't look at me",
-      "wait",
-      "okay fine"
+      "wait"
     ];
 
-    const MAYBE_GIVE_IN = 3;
+    const MAYBE_GIVE_IN = maybeTexts.length;
 
     const successHeadlines = [
       "ok wow",
@@ -352,23 +358,11 @@
     let taps = 0;
     let maybeClicks = 0;
 
-    // Heart shape: parametric curve, 16 points around the heart
-    function heartPoint(i, n) {
-      const t = (i / n) * 2 * Math.PI;
-      const x = 16 * Math.pow(Math.sin(t), 3);
-      const y = -(13 * Math.cos(t) - 5 * Math.cos(2*t) - 2 * Math.cos(3*t) - Math.cos(4*t));
-      return { x: x * 5.5, y: y * 5.5 };
+    function updateLoveBar() {
+      const progress = Math.min(taps, messages.length);
+      const percent = Math.round((progress / messages.length) * 100);
+      loveBarFill.style.width = `${percent}%`;
     }
-
-    // create dots in heart shape
-    messages.forEach((_, i) => {
-      const dot = document.createElement("div");
-      dot.className = "dot";
-      const { x, y } = heartPoint(i, messages.length);
-      dot.style.left = `calc(50% + ${x}px)`;
-      dot.style.top = `calc(50% + ${y}px)`;
-      dotsWrap.appendChild(dot);
-    });
 
     function squish() {
       const rot = (Math.random() * 12 - 6).toFixed(1);
@@ -402,9 +396,8 @@
       message.textContent = messages[taps];
       message.classList.add("show");
 
-      dotsWrap.children[taps].classList.add("filled");
-
       taps++;
+      updateLoveBar();
 
       if (taps === messages.length) {
         setTimeout(() => buttons.classList.add("show"), 400);
@@ -425,6 +418,8 @@
         ? successMaybeSublines[Math.floor(Math.random() * successMaybeSublines.length)]
         : successSublines[Math.floor(Math.random() * successSublines.length)];
       success.classList.add("show");
+      if (app) app.setAttribute("aria-hidden", "true");
+      requestAnimationFrame(() => successInner.focus());
       for (let i = 0; i < 25; i++) {
         setTimeout(particle, i * 80);
       }
@@ -438,33 +433,35 @@
     });
 
     function yesAfterMaybe() {
-      showSuccess(false);
+      showSuccess(true);
     }
 
     function handleMaybeClick() {
       maybeClicks++;
-      if (maybeClicks >= MAYBE_GIVE_IN) {
-        maybeBtn.textContent = "yes duh 💗";
-        maybeBtn.classList.add("yes");
-        maybeBtn.classList.remove("maybe");
-        maybeBtn.removeEventListener("click", handleMaybeClick);
-        maybeBtn.addEventListener("click", yesAfterMaybe);
-        showSuccess(true);
+      if (maybeClicks <= MAYBE_GIVE_IN) {
+        maybeBtn.textContent = maybeTexts[maybeClicks - 1];
+        maybeBtn.style.transform = `translateX(${Math.random() * 12 - 6}px)`;
         return;
       }
-      maybeBtn.textContent = maybeTexts[Math.min(maybeClicks - 1, maybeTexts.length - 1)];
-      maybeBtn.style.transform = `translateX(${Math.random()*12 - 6}px)`;
+      maybeBtn.textContent = "yes duh 💗";
+      maybeBtn.classList.add("yes");
+      maybeBtn.classList.remove("maybe");
+      maybeBtn.removeEventListener("click", handleMaybeClick);
+      maybeBtn.addEventListener("click", yesAfterMaybe);
+      buttons.classList.add("single-yes");
     }
 
     maybeBtn.addEventListener("click", handleMaybeClick);
 
     replayBtn.addEventListener("click", () => {
       success.classList.remove("show");
+      if (app) app.removeAttribute("aria-hidden");
       buttons.classList.remove("show");
       message.classList.remove("show");
       message.textContent = "";
       taps = 0;
       maybeClicks = 0;
+      updateLoveBar();
       heart.style.transform = "scale(1) rotate(0deg)";
       maybeBtn.textContent = "i'm scared 😭";
       maybeBtn.classList.remove("yes");
@@ -472,9 +469,8 @@
       maybeBtn.style.transform = "";
       maybeBtn.removeEventListener("click", yesAfterMaybe);
       maybeBtn.addEventListener("click", handleMaybeClick);
-      for (const dot of dotsWrap.children) {
-        dot.classList.remove("filled");
-      }
+      buttons.classList.remove("single-yes");
+      heart.focus();
     });
   </script>
 </body>
